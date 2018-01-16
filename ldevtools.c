@@ -51,8 +51,11 @@ void (ldv_dump_value)(lua_State* L, TValue* value)
 {
 	switch (ttype(value))
 	{
-		case LUA_TTABLE:		 ldv_dump_table(L, hvalue(value));					return;
-		case LUA_TLCL:			 ldv_dump_lua_closure(L, clLvalue(value));			return;
+		
+		case LUA_TNIL:			 ldv_dump_nil(L, value);							return;
+		case LUA_TBOOLEAN:		 ldv_dump_boolean(L, bvalue(value));				return;
+		case LUA_TTABLE:		 ldv_dump_table(L, hvalue(value));					return;	
+		case LUA_TLCL:			 ldv_dump_lua_closure(L, clLvalue(value));			return;	
 		case LUA_TCCL:			 ldv_dump_c_closure(L, clCvalue(value));			return;
 		case LUA_TLCF:			 ldv_dump_c_light_func(L, fvalue(value));			return;
 		case LUA_TNUMFLT:		 ldv_dump_float_number(L, fltvalue(value));			return;
@@ -64,6 +67,16 @@ void (ldv_dump_value)(lua_State* L, TValue* value)
 			ldv_log("(ldv_dump_value func). Not recognized type: %s \n", ttypename(ttnov(value)));
 			return;
 	}
+}
+
+void (ldv_dump_nil)(lua_State* L, TValue* nil_object)
+{
+	ldv_log("Type: NIL OBJECT \n");
+}
+
+void (ldv_dump_boolean)(lua_State* L, int bool_val)
+{
+	ldv_log("Type: BOOLEAN \n");
 }
 
 void (ldv_dump_table)(lua_State* L, Table* table)

@@ -24,6 +24,20 @@ LUA_API void (ldv_dump_stack)(lua_State* L);
 LUA_API void (ldv_dump_value)(lua_State* L, TValue* value);
 
 /*
+		Dumps nil objects
+		Params: lua state, nil object
+		Return: none
+*/
+LUA_API void (ldv_dump_nil)(lua_State* L, TValue* nil_object);
+
+/*
+		Dumps boolean object
+		Params: lua state, boolean object
+		Return: none
+*/
+LUA_API void (ldv_dump_boolean)(lua_State* L, int bool_val);
+
+/*
 		Dumps table
 		Params: lua state, table
 		Return: none
