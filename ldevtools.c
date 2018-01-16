@@ -35,6 +35,6 @@ void (ldv_dump_stack)(lua_State* L)
 	{
 		StkId stack_elem = stack + i;
 		int type = ttnov(stack_elem);
-		ldv_log("Element: %i Type: %s \n", ttypename(type));
+		ldv_log("Element: %i Type: %s \n", i, ttypename(type));
 	}
 }
