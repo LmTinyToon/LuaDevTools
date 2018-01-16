@@ -30,11 +30,11 @@ void (ldv_dump_stack)(lua_State* L)
 {
 	StkId stack = L->stack;
 	const int stack_size = L->stacksize;
-	ldv_log("LUA STACK DUMP. address:%p size: %i bytes. \n", L->stack, stack_size);
+	ldv_log("LUA STACK DUMP. address:%p size: %i objects. \n", L->stack, stack_size);
 	for (int i = 0; i < stack_size; ++i)
 	{
 		StkId stack_elem = stack + i;
 		int type = ttnov(stack_elem);
-		ldv_log("%s \n", ttypename(type));
+		ldv_log("Element: %i Type: %s \n", ttypename(type));
 	}
 }
