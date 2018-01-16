@@ -72,4 +72,18 @@ LUA_API void (ldv_dump_user_data)(lua_State* L, char* user_data);
 */
 LUA_API void (ldv_dump_light_user_data)(lua_State* L, void* light_user_data);
 
+/*
+		Dumps integer lua anumber
+		Params: lua state, lua integer number
+		Return: none
+*/
+LUA_API void (ldv_dump_int_number)(lua_State* L, lua_Integer int_num);
+
+/*
+		Dumps float lua anumber
+		Params: lua state, lua float number
+		Return: none
+*/
+LUA_API void (ldv_dump_float_number)(lua_State* L, lua_Number float_num);
+
 #endif

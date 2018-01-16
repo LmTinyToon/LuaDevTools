@@ -51,13 +51,15 @@ void (ldv_dump_value)(lua_State* L, TValue* value)
 {
 	switch (ttype(value))
 	{
-		case LUA_TTABLE: return ldv_dump_table(L, hvalue(value));
-		case LUA_TLCL: return ldv_dump_lua_closure(L, clLvalue(value));
-		case LUA_TCCL: return ldv_dump_c_closure(L, clCvalue(value));
-		case LUA_TLCF: return ldv_dump_c_light_func(L, fvalue(value));
-		case LUA_TTHREAD: return ldv_dump_thread(L, thvalue(value));
-		case LUA_TUSERDATA: return ldv_dump_user_data(L, getudatamem(uvalue(value)));
-		case LUA_TLIGHTUSERDATA: return ldv_dump_light_user_data(L, pvalue(value));
+		case LUA_TTABLE:		 ldv_dump_table(L, hvalue(value));					return;
+		case LUA_TLCL:			 ldv_dump_lua_closure(L, clLvalue(value));			return;
+		case LUA_TCCL:			 ldv_dump_c_closure(L, clCvalue(value));			return;
+		case LUA_TLCF:			 ldv_dump_c_light_func(L, fvalue(value));			return;
+		case LUA_TNUMFLT:		 ldv_dump_float_number(L, fltvalue(value));			return;
+		case LUA_TNUMINT:		 ldv_dump_int_number(L, ivalue(value));				return;
+		case LUA_TTHREAD:		 ldv_dump_thread(L, thvalue(value));				return;
+		case LUA_TUSERDATA:		 ldv_dump_user_data(L, getudatamem(uvalue(value))); return;
+		case LUA_TLIGHTUSERDATA: ldv_dump_light_user_data(L, pvalue(value));		return;
 		default: 
 			ldv_log("(ldv_dump_value func). Not recognized type: %s \n", ttypename(ttnov(value)));
 			return;
@@ -98,4 +100,14 @@ void (ldv_dump_user_data)(lua_State* L, char* user_data)
 void (ldv_dump_light_user_data)(lua_State* L, void* light_user_data)
 {
 	ldv_log("Type: LIGHT USER DATA \n");
+}
+
+void (ldv_dump_int_number)(lua_State* L, lua_Integer int_num)
+{
+	ldv_log("Type: INTEGER NUMBER \n");
+}
+
+void (ldv_dump_float_number)(lua_State* L, lua_Number float_num)
+{
+	ldv_log("Type: FLOAT NUMBER \n");
 }
