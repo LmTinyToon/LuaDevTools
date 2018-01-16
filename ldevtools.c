@@ -34,6 +34,21 @@ static void ldv_log(const char* format, ...)
 }
 
 //	Public API implementation
+void (ldv_dump_call_infos)(lua_State* L)
+{
+	ldv_log("=======           LUA CALL INFO DUMP       ==============\n");
+	CallInfo* ci = &(L->base_ci);
+	int index = 0;
+	while (ci != 0)
+	{
+		ldv_log("Call info: %p, index: %i, results: %i \n", ci, index, ci->nresults);
+		ldv_log("Func: %p, Top stack elem: %p \n", ci->func, ci->top);
+		ci = ci->next;
+		++index;
+	}
+	ldv_log("=========================================================\n");
+}
+
 void (ldv_dump_stack)(lua_State* L)
 {
 	ldv_log("=======           LUA STACK DUMP           ==============\n");

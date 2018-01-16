@@ -9,6 +9,14 @@
 #include "lobject.h"
 
 //	Public API
+
+/*
+		Dumps calling infos
+		Params: lua state
+		Return: none
+*/
+LUA_API void (ldv_dump_call_infos)(lua_State* L);
+
 /*
 		Dumps stack of lua state
 		Params: lua state
