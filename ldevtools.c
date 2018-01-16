@@ -56,8 +56,8 @@ void (ldv_dump_value)(lua_State* L, TValue* value)
 		case LUA_TCCL: return ldv_dump_c_closure(L, clCvalue(value));
 		case LUA_TLCF: return ldv_dump_c_light_func(L, fvalue(value));
 		case LUA_TTHREAD: return ldv_dump_thread(L, thvalue(value));
-		/*case LUA_TUSERDATA: return getudatamem(uvalue(o));
-		case LUA_TLIGHTUSERDATA: return pvalue(o);*/
+		case LUA_TUSERDATA: return ldv_dump_user_data(L, getudatamem(uvalue(value)));
+		case LUA_TLIGHTUSERDATA: return ldv_dump_light_user_data(L, pvalue(value));
 		default: 
 			ldv_log("(ldv_dump_value func). Not recognized type: %s \n", ttypename(ttnov(value)));
 			return;
@@ -88,4 +88,14 @@ void (ldv_dump_c_light_func)(lua_State* L, lua_CFunction* light_func)
 void (ldv_dump_thread)(lua_State* L, lua_State* lua_thread)
 {
 	ldv_log("Type: LUA THREAD \n");
+}
+
+void (ldv_dump_user_data)(lua_State* L, char* user_data)
+{
+	ldv_log("Type: USER DATA \n");
+}
+
+void (ldv_dump_light_user_data)(lua_State* L, void* light_user_data)
+{
+	ldv_log("Type: LIGHT USER DATA \n");
 }

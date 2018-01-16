@@ -52,10 +52,24 @@ LUA_API void (ldv_dump_c_closure)(lua_State* L, CClosure* cclosure);
 LUA_API void (ldv_dump_c_light_func)(lua_State* L, lua_CFunction* light_func);
 
 /*
-	Dumpts lua thread
-	Params: lua state, lua thread
-	Return: none
+		Dumps lua thread
+		Params: lua state, lua thread
+		Return: none
 */
 LUA_API void (ldv_dump_thread)(lua_State* L, lua_State* lua_thread);
+
+/*
+		Dumps user data
+		Params: lua state, user data
+		Return: none
+*/
+LUA_API void (ldv_dump_user_data)(lua_State* L, char* user_data);
+
+/*
+		Dumps light user data
+		Params: lua state, light user data
+		Return: none
+*/
+LUA_API void (ldv_dump_light_user_data)(lua_State* L, void* light_user_data);
 
 #endif
