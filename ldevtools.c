@@ -36,13 +36,19 @@ static void ldv_log(const char* format, ...)
 //	Public API implementation
 void (ldv_dump_stack)(lua_State* L)
 {
-	StkId stack = L->stack;
-	const int stack_size = L->stacksize;
-	ldv_log("LUA STACK DUMP. address:%p size: %i objects. \n", L->stack, stack_size);
-	for (int i = 0; i < stack_size; ++i)
+	ldv_log("=======           LUA STACK DUMP           ==============\n");
+	ldv_log("LUA STACK DUMP. address:%p size: %i objects. \n", L->stack, L->stacksize);
+	for (int i = 0; i < L->stacksize; ++i)
 	{
-		StkId stack_elem = stack + i;
-		int type = ttnov(stack_elem);
-		ldv_log("Element: %i Type: %s \n", i, ttypename(type));
+		StkId stack_elem = L->stack + i;
+		ldv_log("Element index: %i \n", i);
+		ldv_dump_value(L, stack_elem);
 	}
+	ldv_log("=========================================================\n");
+}
+
+void (ldv_dump_value)(lua_State* L, TValue* value)
+{
+	int type = ttnov(value);
+	ldv_log("Type: %s \n", ttypename(type));
 }
