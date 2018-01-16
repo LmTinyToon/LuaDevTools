@@ -79,6 +79,7 @@ void (ldv_dump_nil)(lua_State* L, TValue* nil_object)
 void (ldv_dump_boolean)(lua_State* L, int bool_val)
 {
 	ldv_log("Type: BOOLEAN \n");
+	ldv_log("Value: %i \n", bool_val);
 }
 
 void (ldv_dump_table)(lua_State* L, Table* table)
@@ -100,6 +101,7 @@ void (ldv_dump_c_closure)(lua_State* L, CClosure* cclosure)
 void (ldv_dump_c_light_func)(lua_State* L, lua_CFunction light_func)
 {
 	ldv_log("Type: LIGHT C FUNCTION \n");
+	ldv_log("Value: %p \n", light_func);
 }
 
 void (ldv_dump_thread)(lua_State* L, lua_State* lua_thread)
@@ -110,21 +112,25 @@ void (ldv_dump_thread)(lua_State* L, lua_State* lua_thread)
 void (ldv_dump_user_data)(lua_State* L, char* user_data)
 {
 	ldv_log("Type: USER DATA \n");
+	ldv_log("Value: %p \n", user_data);
 }
 
 void (ldv_dump_light_user_data)(lua_State* L, void* light_user_data)
 {
 	ldv_log("Type: LIGHT USER DATA \n");
+	ldv_log("Value: %p \n", light_user_data);
 }
 
 void (ldv_dump_int_number)(lua_State* L, lua_Integer int_num)
 {
 	ldv_log("Type: INTEGER NUMBER \n");
+	ldv_log("Value: %i \n", int_num);
 }
 
 void (ldv_dump_float_number)(lua_State* L, lua_Number float_num)
 {
 	ldv_log("Type: FLOAT NUMBER \n");
+	ldv_log("Value: %f \n", float_num);
 }
 
 void (ldv_dump_short_string)(lua_State* L, TString* string)
