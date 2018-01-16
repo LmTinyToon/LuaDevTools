@@ -63,7 +63,7 @@ LUA_API void (ldv_dump_c_closure)(lua_State* L, CClosure* cclosure);
 		Params: lua state, light c function
 		Return: none
 */
-LUA_API void (ldv_dump_c_light_func)(lua_State* L, lua_CFunction* light_func);
+LUA_API void (ldv_dump_c_light_func)(lua_State* L, lua_CFunction light_func);
 
 /*
 		Dumps lua thread

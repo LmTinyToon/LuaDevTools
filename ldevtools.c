@@ -97,7 +97,7 @@ void (ldv_dump_c_closure)(lua_State* L, CClosure* cclosure)
 	ldv_log("Type: C CLOSURE \n");
 }
 
-void (ldv_dump_c_light_func)(lua_State* L, lua_CFunction* light_func)
+void (ldv_dump_c_light_func)(lua_State* L, lua_CFunction light_func)
 {
 	ldv_log("Type: LIGHT C FUNCTION \n");
 }
