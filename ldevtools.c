@@ -6,6 +6,10 @@
 #include "ldevtools.h"
 #include "lstate.h"
 
+#ifdef _WIN32
+	#include <windows.h>
+#endif
+
 //	Output char buffer
 static char out_buff[1000];
 
@@ -21,7 +25,11 @@ static void ldv_log(const char* format, ...)
 	va_start (args, format);
 	vsprintf(out_buff, format, args);
 	va_end (args);
-	
+
+#ifdef _WIN32
+	OutputDebugStringA(out_buff);
+#endif
+
 	printf(out_buff);
 }
 
