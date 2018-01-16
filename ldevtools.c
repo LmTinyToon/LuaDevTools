@@ -63,6 +63,8 @@ void (ldv_dump_value)(lua_State* L, TValue* value)
 		case LUA_TTHREAD:		 ldv_dump_thread(L, thvalue(value));				return;
 		case LUA_TUSERDATA:		 ldv_dump_user_data(L, getudatamem(uvalue(value))); return;
 		case LUA_TLIGHTUSERDATA: ldv_dump_light_user_data(L, pvalue(value));		return;
+		case LUA_TSHRSTR:		 ldv_dump_short_string(L, tsvalue(value));			return;
+		case LUA_TLNGSTR:		 ldv_dump_long_string(L, tsvalue(value));			return;
 		default: 
 			ldv_log("(ldv_dump_value func). Not recognized type: %s \n", ttypename(ttnov(value)));
 			return;
@@ -123,4 +125,14 @@ void (ldv_dump_int_number)(lua_State* L, lua_Integer int_num)
 void (ldv_dump_float_number)(lua_State* L, lua_Number float_num)
 {
 	ldv_log("Type: FLOAT NUMBER \n");
+}
+
+void (ldv_dump_short_string)(lua_State* L, TString* string)
+{
+	ldv_log("Type: SHORT STRING \n");
+}
+
+void (ldv_dump_long_string)(lua_State* L, TString* string)
+{
+	ldv_log("Type: LONG STRING \n");
 }

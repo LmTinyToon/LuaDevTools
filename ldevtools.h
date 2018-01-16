@@ -100,4 +100,18 @@ LUA_API void (ldv_dump_int_number)(lua_State* L, lua_Integer int_num);
 */
 LUA_API void (ldv_dump_float_number)(lua_State* L, lua_Number float_num);
 
+/*
+		Dumps short string object
+		Params: lua state, short lua string
+		Return: none
+*/
+LUA_API void (ldv_dump_short_string)(lua_State* L, TString* string);
+
+/*
+		Dumps long string object
+		Params: lua state, long lua string
+		Return: none
+*/
+LUA_API void (ldv_dump_long_string)(lua_State* L, TString* string);
+
 #endif
