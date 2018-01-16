@@ -122,6 +122,8 @@ void (ldv_dump_c_light_func)(lua_State* L, lua_CFunction light_func)
 void (ldv_dump_thread)(lua_State* L, lua_State* lua_thread)
 {
 	ldv_log("Type: LUA THREAD \n");
+	ldv_log("Stack address %p, Top element %p Call Infos num %i", lua_thread->stack, lua_thread->top, lua_thread->nci);
+	
 }
 
 void (ldv_dump_user_data)(lua_State* L, char* user_data)
