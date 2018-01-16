@@ -41,7 +41,7 @@ void (ldv_dump_call_infos)(lua_State* L)
 	int index = 0;
 	while (ci != 0)
 	{
-		ldv_log("Call info: %p, index: %i, results: %i \n", ci, index, ci->nresults);
+		ldv_log("Call info: %p, level: %i, results: %i \n", ci, index, ci->nresults);
 		ldv_log("Func: %p, Top stack elem: %p \n", ci->func, ci->top);
 		ci = ci->next;
 		++index;
@@ -56,7 +56,7 @@ void (ldv_dump_stack)(lua_State* L)
 	for (int i = 0; i < L->stacksize; ++i)
 	{
 		StkId stack_elem = L->stack + i;
-		ldv_log("Element index: %i \n", i);
+		ldv_log("STACK ELEMENT:   Address: %p Index: %i \n", stack_elem, i);
 		ldv_dump_value(L, stack_elem);
 	}
 	ldv_log("=========================================================\n");
