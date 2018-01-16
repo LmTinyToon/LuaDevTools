@@ -49,6 +49,33 @@ void (ldv_dump_stack)(lua_State* L)
 
 void (ldv_dump_value)(lua_State* L, TValue* value)
 {
-	int type = ttnov(value);
-	ldv_log("Type: %s \n", ttypename(type));
+	switch (ttype(value))
+	{
+		case LUA_TTABLE: return ldv_dump_table(L, hvalue(value));
+		case LUA_TLCL: return ldv_lua_closure(L, clLvalue(value));
+		case LUA_TCCL: return ldv_c_closure(L, clCvalue(value));
+		/*case LUA_TLCF: return cast(void *, cast(size_t, fvalue(o)));
+		case LUA_TTHREAD: return thvalue(o);
+		case LUA_TUSERDATA: return getudatamem(uvalue(o));
+		case LUA_TLIGHTUSERDATA: return pvalue(o);*/
+		default: 
+			ldv_log("(ldv_dump_value func). Not recognized type: %s \n", ttypename(ttnov(value)));
+			return;
+	}
+}
+
+LUA_API void (ldv_dump_table)(lua_State* L, Table* table)
+{
+	ldv_log("Type: TABLE \n");
+}
+
+
+LUA_API void (ldv_lua_closure)(lua_State* L, LClosure* lclosure)
+{
+	ldv_log("Type: LUA CLOSURE \n");
+}
+
+LUA_API void (ldv_c_closure)(lua_State* L, CClosure* cclosure)
+{
+	ldv_log("Type: C CLOSURE \n");
 }
