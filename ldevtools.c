@@ -1,19 +1,40 @@
 //	Standard includes
 #include <stdio.h>
+#include <stdarg.h>
 
 //	Includes
 #include "ldevtools.h"
+#include "lstate.h"
+
+//	Output char buffer
+static char out_buff[1000];
 
 //	Internal helpers
-#define LDV_LOG(x) printf(x);
+/*
+		Logs message
+		Params: format message, variadic args
+		Return: none
+*/
+static void ldv_log(const char* format, ...)
+{
+	va_list args;
+	va_start (args, format);
+	vsprintf(out_buff, format, args);
+	va_end (args);
+	
+	printf(out_buff);
+}
 
 //	Public API implementation
-LUA_API void (ldv_dump_stack)(lua_State* L)
+void (ldv_dump_stack)(lua_State* L)
 {
-	LDV_LOG("Hey, that's dumped stack")
-	for (int i = 0; i < stacksize; ++i)
+	StkId stack = L->stack;
+	const int stack_size = L->stacksize;
+	ldv_log("LUA STACK DUMP. address:%p size: %i bytes. \n", L->stack, stack_size);
+	for (int i = 0; i < stack_size; ++i)
 	{
-		int type = isvalid(o) ? ttnov(o) : LUA_TNONE;
-		LDV_LOG("%s \n", ttypename(type))
+		StkId stack_elem = stack + i;
+		int type = ttnov(stack_elem);
+		ldv_log("%s \n", ttypename(type));
 	}
 }
