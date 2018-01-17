@@ -10,8 +10,20 @@
 	#include <windows.h>
 #endif
 
-//	Output char buffer
+//	Types
+//		LDV byte type
+typedef unsigned char ldv_byte;
+
+//	Data
+#define MEM_BUFF_SIZE 1000000
+//		Output char buffer
 static char out_buff[1000];
+//		Size of memory buffer
+static int  mem_buf_size = MEM_BUFF_SIZE;
+//		Current position of not filled data in buffer
+static int  pos = 0;
+//		Memory buffer
+static ldv_byte mem_buf[MEM_BUFF_SIZE] = { 0 };
 
 //	Internal helpers
 /*
@@ -34,6 +46,11 @@ static void ldv_log(const char* format, ...)
 }
 
 //	Public API implementation
+void* ldv_frealloc(void* ud, void* ptr, size_t osize, size_t nsize)
+{
+
+}
+
 void (ldv_dump_call_infos)(lua_State* L)
 {
 	ldv_log("=======           LUA CALL INFO DUMP       ==============\n");

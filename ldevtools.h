@@ -9,6 +9,15 @@
 #include "lobject.h"
 
 //	Public API
+/*
+		LDV frealloc function
+		Params: user data, ptr to data, original size, new size
+		Return: ptr to freallocated memory
+
+		NOTE: Freallocation works inside static memory pool. 
+		Such behaviour "simulates" "fixed" pointers during lua session.
+*/
+LUA_API void* (ldv_frealloc)(void* ud, void* ptr, size_t osize, size_t nsize);
 
 /*
 		Dumps calling infos
