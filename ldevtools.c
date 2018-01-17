@@ -46,6 +46,82 @@ static void ldv_log(const char* format, ...)
 }
 
 /*
+		Gets data mask, which defines data layout in block info
+		Params: none
+		Return: block data mask
+*/
+static ldv_block_type block_data_mask(void)
+{
+	return (1 << sizeof(ldv_block_type) * 8) - 1;
+}
+
+/*
+		Gets block info at raw pointer
+		Params: raw pointer
+		Return: block info
+*/
+static ldv_block_type* get_block_info(void* ptr) 
+{ 
+	ldv_block_type* block = (ldv_block_type*)(ptr) - 2;
+	return block_is_valid(block) ? block : 0;
+}
+
+/*
+		Checks, whether block is valid
+		Params: block
+		Return: check result
+*/
+static int block_is_valid(ldv_block_type* block)
+{
+	return mem_buf <= block && block < mem_buf + MEM_BUFF_SIZE;
+}
+
+/*
+		Gets previous block info
+		Params: block info
+		Return: prev block info
+*/
+static ldv_block_type* prev_block_info(ldv_block_type* block)
+{
+	ldv_block_type* prev_block = block - (block[1] & block_data_mask());
+	return block_is_valid(prev_block) ? prev_block : 0;
+}
+
+
+/*
+		Gets next block info
+		Params: block info
+		Return: next block info
+*/
+static ldv_block_type* next_block_info(ldv_block_type* block)
+{
+	ldv_block_type* next_block = block + (block[0] & block_data_mask());
+	return block_is_valid(next_block) ? next_block : 0;
+}
+
+/*
+		Frees memory allocated via ldv_malloc
+		Params: pointer to memory
+		Return: none
+*/
+static void ldv_free(void* ptr)
+{
+	/*ldv_block_type* block = (ldv_block_type*)(ptr) - 2;
+	ldv_block_type* prev_block = block - block-
+	*/
+}
+
+/*
+		Frees memory allocated via ldv_malloc
+		Params: pointer to memory
+		Return: none
+*/
+static void* ldv_malloc(void* ptr, size_t nsize)
+{
+
+}
+
+/*
 		LDV frealloc function
 		Params: user data, ptr to data, original size, new size
 		Return: ptr to freallocated memory
@@ -55,7 +131,18 @@ static void ldv_log(const char* format, ...)
 */
 static void* ldv_frealloc(void* ud, void* ptr, size_t osize, size_t nsize)
 {
-
+	(void)(ud); (void)(osize);	/*Unused parameters*/
+	if (nsize == 0)
+	{
+		//	Deletion of block
+		return 0;
+	}
+	if (osize != 0)
+	{
+		//	Release memory
+	}
+	//	Creation new memory
+	return 0 /*new created ptr*/;
 }
 
 /*
@@ -65,7 +152,7 @@ static void* ldv_frealloc(void* ud, void* ptr, size_t osize, size_t nsize)
 */
 static int ldv_init_memory()
 {
-	if (MEM_BUFF_SIZE > (1 << sizeof(ldv_block_type) * 8) - 1)
+	if (MEM_BUFF_SIZE > block_data_mask())
 	{
 		ldv_log("Too big memory buffer size");
 		return 1;
@@ -73,7 +160,7 @@ static int ldv_init_memory()
 	for (int i = 0; i < MEM_BUFF_SIZE; ++i)
 		mem_buf[i] = 0;
 	block_index = 0;
-	mem_buf[block_index] = 1 << sizeof(ldv_block_type) | MEM_BUFF_SIZE - 1;
+	mem_buf[block_index] = 1 << sizeof(ldv_block_type) | MEM_BUFF_SIZE;
 	return 0;
 }
 
