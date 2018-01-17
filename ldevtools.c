@@ -17,6 +17,12 @@ typedef unsigned int ldv_block_type;
 //	Data
 //		Maximal buffer size
 #define MEM_BUFF_SIZE 1000000
+#define NEXT_BLOCK 1
+#define PREV_BLOCK 0
+
+#define DATA_FLAG 0
+#define NEXT_FLAG 1
+#define PREV_FLAG 2
 
 //		Output char buffer
 static char out_buff[1000];
@@ -24,6 +30,54 @@ static char out_buff[1000];
 static int  block_index = 0;
 //		Memory buffer
 static ldv_block_type mem_buf[MEM_BUFF_SIZE];
+
+/*
+        Helper structure to mark blocks in memory buffer. It is used by memory manager
+*/
+struct BlocksInfo
+{
+    /*  Index (offset) to next block    */
+    ldv_block_type next_index;
+    /*  Index (offset) to previous block    */
+    ldv_block_type prev_index;
+};
+
+/*
+        Sets new index with flag to blocks info
+        Params: blocks info, next index flag, index, val flag
+        Return: none
+*/
+void set_index(BlocksInfo* binfo, int is_next, ldv_block_type index, int flag)
+{
+    ldv_block_type* index_ptr = is_next ? &binfo->next_index : &binfo->prev_index;
+    *index_ptr = flag ? block_flag_mask() | index : index;
+}
+
+/*
+        Checks, whether blocks info is empty
+        Params: blocks info
+        Return: check result
+*/
+int is_empty(BlocksInfo* binfo)
+{
+    return binfo->next_index & block_flag_mask();
+}
+
+/*
+        Checks, whether specified flag is set
+        Params: block info, flag
+        Return: check result
+*/
+int check(BlocksInfo* binfo, int flag)
+{
+    /*  TODO: (alex) add usage of enums */
+    int mask = block_flag_mask();
+    if (flag == DATA_FLAG)
+        return binfo->prev_index & mask;
+    if (flag == NEXT_FLAG)
+        return binfo->next_index & mask;
+    return binfo->prev_index & ~mask == 0;
+}
 
 //	Internal helpers
 /*
@@ -66,14 +120,13 @@ static ldv_block_type block_flag_mask(void)
 }
 
 /*
-		Gets block info at raw pointer
+		Gets blocks info at raw pointer
 		Params: raw pointer
-		Return: block info
+		Return: blocks info
 */
-static ldv_block_type* block_info(void* ptr) 
-{ 
-	ldv_block_type* block = (ldv_block_type*)(ptr) - 2;
-	return block_is_valid(block) ? block : 0;
+static BlocksInfo* blocks_info(void* ptr)
+{
+	return (BlocksInfo*)(ptr) - 2;
 }
 
 /*
@@ -81,9 +134,9 @@ static ldv_block_type* block_info(void* ptr)
 		Params: block
 		Return: check result
 */
-static int block_is_valid(ldv_block_type* block)
+static int BlocksInfo(BlocksInfo* block)
 {
-	return mem_buf <= block && block < mem_buf + MEM_BUFF_SIZE;
+	return mem_buf <= (ldv_block_type*)block && (ldv_block_type*)block < mem_buf + MEM_BUFF_SIZE;
 }
 
 /*
@@ -111,10 +164,10 @@ static ldv_block_type pblock(ldv_block_type* block)
 		Params: block info
 		Return: prev block info
 */
-static ldv_block_type* prev_block_info(ldv_block_type* block)
+static BlocksInfo* prev_block_info(BlocksInfo* block)
 {
-	ldv_block_type* prev_block = block - (block[1] & block_data_mask());
-	return block_is_valid(prev_block) ? prev_block : 0;
+	BlocksInfo* prev_block = (BlocksInfo*)((ldv_block_type*)block - (block[1] & block_data_mask()));
+	return block_is_valid((BlocksInfo*)prev_block) ? prev_block : 0;
 }
 
 
@@ -136,11 +189,18 @@ static ldv_block_type* next_block_info(ldv_block_type* block)
 */
 static void ldv_free(void* ptr)
 {
-	ldv_block_type* block = block_info(ptr);
-	
-	ldv_block_type* next_block = next_block_info(block);
-	ldv_block_type* prev_block = prev_block_info(block);
-	
+	BlocksInfo* b_info = blocks_info(ptr);
+	ldv_block_type* n_block = next_block_info(block);
+	if (block_is_valid(n_block) && check(next_block, DATA_FLAG))
+	{
+        set_index(b_info,  NEXT_BLOCK, nblock(b_info) + nblock(next_block), DATA);
+        ldv_block_type* nnbinfo = next_block_info(n_block);
+        if (block_is_valid(nnbinfo))
+        {
+            set_index(nnbinfo, PREV_BLOCK, pblock(nnbinfo) - pblock(n_block, DATA));
+        }
+	}
+	/*  Implement handling left "merging"   */
 }
 
 /*
@@ -236,11 +296,11 @@ void (ldv_dump_value)(lua_State* L, TValue* value)
 {
 	switch (ttype(value))
 	{
-		
+
 		case LUA_TNIL:			 ldv_dump_nil(L, value);							return;
 		case LUA_TBOOLEAN:		 ldv_dump_boolean(L, bvalue(value));				return;
-		case LUA_TTABLE:		 ldv_dump_table(L, hvalue(value));					return;	
-		case LUA_TLCL:			 ldv_dump_lua_closure(L, clLvalue(value));			return;	
+		case LUA_TTABLE:		 ldv_dump_table(L, hvalue(value));					return;
+		case LUA_TLCL:			 ldv_dump_lua_closure(L, clLvalue(value));			return;
 		case LUA_TCCL:			 ldv_dump_c_closure(L, clCvalue(value));			return;
 		case LUA_TLCF:			 ldv_dump_c_light_func(L, fvalue(value));			return;
 		case LUA_TNUMFLT:		 ldv_dump_float_number(L, fltvalue(value));			return;
@@ -250,7 +310,7 @@ void (ldv_dump_value)(lua_State* L, TValue* value)
 		case LUA_TLIGHTUSERDATA: ldv_dump_light_user_data(L, pvalue(value));		return;
 		case LUA_TSHRSTR:		 ldv_dump_short_string(L, tsvalue(value));			return;
 		case LUA_TLNGSTR:		 ldv_dump_long_string(L, tsvalue(value));			return;
-		default: 
+		default:
 			ldv_log("(ldv_dump_value func). Not recognized type: %s \n", ttypename(ttnov(value)));
 			return;
 	}
@@ -293,7 +353,7 @@ void (ldv_dump_thread)(lua_State* L, lua_State* lua_thread)
 {
 	ldv_log("Type: LUA THREAD \n");
 	ldv_log("Stack address %p, Top element %p Call Infos num %i", lua_thread->stack, lua_thread->top, lua_thread->nci);
-	
+
 }
 
 void (ldv_dump_user_data)(lua_State* L, char* user_data)
