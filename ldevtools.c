@@ -12,18 +12,18 @@
 
 //	Types
 //		LDV byte type
-typedef unsigned char ldv_byte;
+typedef unsigned int ldv_block_type;
 
 //	Data
+//		Maximal buffer size
 #define MEM_BUFF_SIZE 1000000
+
 //		Output char buffer
 static char out_buff[1000];
-//		Size of memory buffer
-static int  mem_buf_size = MEM_BUFF_SIZE;
-//		Current position of not filled data in buffer
-static int  pos = 0;
+//		Index of first free block
+static int  block_index = 0;
 //		Memory buffer
-static ldv_byte mem_buf[MEM_BUFF_SIZE] = { 0 };
+static ldv_block_type mem_buf[MEM_BUFF_SIZE];
 
 //	Internal helpers
 /*
@@ -45,13 +45,47 @@ static void ldv_log(const char* format, ...)
 	printf(out_buff);
 }
 
-//	Public API implementation
-void* ldv_frealloc(void* ud, void* ptr, size_t osize, size_t nsize)
+/*
+		LDV frealloc function
+		Params: user data, ptr to data, original size, new size
+		Return: ptr to freallocated memory
+
+		NOTE: Freallocation works inside static memory pool.
+		Such behaviour "simulates" "fixed" pointers during lua session.
+*/
+static void* ldv_frealloc(void* ud, void* ptr, size_t osize, size_t nsize)
 {
 
 }
 
-void (ldv_dump_call_infos)(lua_State* L)
+/*
+		Initializes memory buffer
+		Params: none
+		Return: error code
+*/
+static int ldv_init_memory()
+{
+	if (MEM_BUFF_SIZE > (1 << sizeof(ldv_block_type) * 8) - 1)
+	{
+		ldv_log("Too big memory buffer size");
+		return 1;
+	}
+	for (int i = 0; i < MEM_BUFF_SIZE; ++i)
+		mem_buf[i] = 0;
+	block_index = 0;
+	mem_buf[block_index] = 1 << sizeof(ldv_block_type) | MEM_BUFF_SIZE - 1;
+	return 0;
+}
+
+//	Public API implementation
+lua_State* ldv_new_debug_lua_state()
+{
+	if (ldv_init_memory() != 0)
+		return 0;
+	return lua_newstate(ldv_frealloc, 0);
+}
+
+void ldv_dump_call_infos(lua_State* L)
 {
 	ldv_log("=======           LUA CALL INFO DUMP       ==============\n");
 	CallInfo* ci = &(L->base_ci);
