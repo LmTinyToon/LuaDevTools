@@ -56,11 +56,21 @@ static ldv_block_type block_data_mask(void)
 }
 
 /*
+		Gets block flag mask
+		Params: none
+		Return: block flag mask
+*/
+static ldv_block_type block_flag_mask(void)
+{
+	return 1 << sizeof(ldv_block_type) * 8;
+}
+
+/*
 		Gets block info at raw pointer
 		Params: raw pointer
 		Return: block info
 */
-static ldv_block_type* get_block_info(void* ptr) 
+static ldv_block_type* block_info(void* ptr) 
 { 
 	ldv_block_type* block = (ldv_block_type*)(ptr) - 2;
 	return block_is_valid(block) ? block : 0;
@@ -74,6 +84,26 @@ static ldv_block_type* get_block_info(void* ptr)
 static int block_is_valid(ldv_block_type* block)
 {
 	return mem_buf <= block && block < mem_buf + MEM_BUFF_SIZE;
+}
+
+/*
+		Next blocks count
+		Params: block
+		Return: next blocks count
+*/
+static ldv_block_type nblock(ldv_block_type* block)
+{
+	return block[0] & block_data_mask();
+}
+
+/*
+		Prev blocks count
+		Params: block
+		Return: prev blocks count
+*/
+static ldv_block_type pblock(ldv_block_type* block)
+{
+	return block[1] & block_data_mask();
 }
 
 /*
@@ -106,9 +136,11 @@ static ldv_block_type* next_block_info(ldv_block_type* block)
 */
 static void ldv_free(void* ptr)
 {
-	/*ldv_block_type* block = (ldv_block_type*)(ptr) - 2;
-	ldv_block_type* prev_block = block - block-
-	*/
+	ldv_block_type* block = block_info(ptr);
+	
+	ldv_block_type* next_block = next_block_info(block);
+	ldv_block_type* prev_block = prev_block_info(block);
+	
 }
 
 /*
