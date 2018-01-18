@@ -147,6 +147,16 @@ static ldv_block_type get_head_offset(BlockHead* bhead, HeadType head_type)
 }
 
 /*
+		Computes hold data size in bytes
+		Params: block head
+		Return: size of block head data
+*/
+static ldv_block_type data_size(BlockHead* bhead)
+{
+	return ((bhead->next_index & block_data_mask()) - 2) * sizeof(ldv_block_type);
+}
+
+/*
         Gets status of current state type
         Params: block info, state type
         Return: state status
@@ -241,11 +251,13 @@ static BlockHead* find_fit_head(size_t nsize)
 		ldv_block_type next_offset = get_head_offset(start_head, NextHead);
 		if (status(start_head, DataState) == Garbage)
 		{
-			if ((next_offset - 1) * sizeof(ldv_block_type) >= nsize)
+			const ldv_block_type start_d_size = data_size(start_head);
+			if (start_d_size >= nsize)
 			{
 				if (best_fit_head == 0)
 					best_fit_head = start_head;
-				best_fit_head = get_head_offset(best_fit_head, NextHead) > next_offset ? start_head : best_fit_head;
+				const ldv_block_type fit_d_size = data_size(best_fit_head);
+				best_fit_head =  fit_d_size > start_d_size ? start_head : best_fit_head;
 			}
 		}
 		if (status(start_head, NextHeadState) == MarginHead)
