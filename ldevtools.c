@@ -52,7 +52,7 @@ enum StateStatus
 //		Output char buffer
 static char out_buff[1000];
 //		Memory buffer
-static ldv_block_type mem_buf[MEM_BUFF_SIZE] = {0};
+static ldv_block_type mem_buf[MEM_BUFF_SIZE] = { MEM_BUFF_SIZE };
 
 /*
         Helper structure to mark blocks in memory buffer. It is used by memory manager
@@ -285,25 +285,19 @@ static void* ldv_malloc(size_t nsize)
 	return RAW_MEMORY(fit_head) + 2;
 }
 
-/*
-		Initializes memory buffer
-		Params: none
-		Return: error code
-*/
-static int ldv_init_memory()
+//	Public API implementation
+void ldv_clear_heap()
 {
 	if (MEM_BUFF_SIZE > block_data_mask())
 	{
 		ldv_log("Too big memory buffer size");
-		return 1;
+		return;
 	}
 	for (int i = 0; i < MEM_BUFF_SIZE; ++i)
 		mem_buf[i] = 0;
 	set_head((BlockHead*)(mem_buf), NextHead, MEM_BUFF_SIZE);
-	return 0;
 }
 
-//	Public API implementation
 void* ldv_frealloc(void* ud, void* ptr, size_t osize, size_t nsize)
 {
 	(void)(ud);	/*Unused parameters*/
@@ -317,11 +311,6 @@ void* ldv_frealloc(void* ud, void* ptr, size_t osize, size_t nsize)
 		ldv_free(ptr);
 	}
 	return ldv_malloc(nsize);
-}
-
-void (ldv_initialize_heap)()
-{
-	ldv_init_memory();
 }
 
 void (ldv_dump_ldv_heap_layout)()
@@ -339,6 +328,11 @@ void (ldv_dump_ldv_heap_layout)()
 		start_head = raw_move_head(start_head, NextHead, next);
 	}
 	ldv_log("==========================================================\n");
+}
+
+void (ldv_dump_ldv_heap_at_mem)(const void* ptr)
+{
+	/* Not implemented */
 }
 
 void ldv_dump_call_infos(lua_State* L)

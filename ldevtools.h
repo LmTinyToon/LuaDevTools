@@ -10,11 +10,11 @@
 
 //	Public API
 /*
-		Initializes custom ldv heap 
+		Clears custom ldv heap 
 		Params: none
 		Return: none
 */
-LUA_API void (ldv_initialize_heap)();
+LUA_API void (ldv_clear_heap)();
 
 /*
 		LDV frealloc function
@@ -24,7 +24,7 @@ LUA_API void (ldv_initialize_heap)();
 		NOTE: Freallocation works inside static memory pool.
 		Such behaviour "simulates" "fixed" pointers during lua session.
 */
-LUA_API void* ldv_frealloc(void* ud, void* ptr, size_t osize, size_t nsize);
+LUA_API void* (ldv_frealloc)(void* ud, void* ptr, size_t osize, size_t nsize);
 
 /*
 		Dumps layout of ldv heap
@@ -32,6 +32,13 @@ LUA_API void* ldv_frealloc(void* ud, void* ptr, size_t osize, size_t nsize);
 		Return: none
 */
 LUA_API void (ldv_dump_ldv_heap_layout)();
+
+/*
+		Dumps ldv heap at memory
+		Params: pointer
+		Return: none
+*/
+LUA_API void (ldv_dump_ldv_heap_at_mem)(const void* ptr);
 
 /*
 		Dumps calling infos
