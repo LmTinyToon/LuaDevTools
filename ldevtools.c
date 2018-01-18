@@ -285,10 +285,10 @@ static void* ldv_malloc(size_t nsize)
 			set_head(get_bhead(fit_head, next_head_off), PrevHead, next_block_off - next_head_off);
 		}
 	}
-	set_head(fit_head, NextHead, next_head_off);
+	set_head(fit_head, NextHead, next_block_off);
 	if (status(fit_head, NextHeadState) == MiddleHead)
 	{
-		set_head(next_block, PrevHead, -next_head_off);
+		set_head(next_block, PrevHead, -next_block_off);
 	}
 	return RAW_MEMORY(fit_head);
 }
