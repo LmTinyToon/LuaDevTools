@@ -230,13 +230,43 @@ static void ldv_free(void* ptr)
 }
 
 /*
+		Finds best fitted memory to alloc
+		Params: pointer to memory, fit size
+		Return: pointer to free memory
+*/
+static BlockHead* find_fit_head(void* ptr, size_t nsize)
+{
+	BlockHead* best_fit_head = 0;
+	BlockHead* start_head = blocks_info(mem_buf);
+	while (status(start_head, NextHeadState) == MiddleHead)
+	{
+		ldv_block_type next_offset = get_head_offset(start_head, NextHead);
+		if (status(start_head, DataState) == Garbage)
+		{
+			if ((next_offset - 1) * sizeof(ldv_block_type) >= nsize)
+			{
+				if (best_fit_head == 0)
+					best_fit_head = start_head;
+				best_fit_head = get_head_offset(best_fit_head, NextHead) > next_offset ? start_head : best_fit_head;
+			}
+		}
+		start_head = get_bhead(start_head, next_offset);
+	}
+	return best_fit_head;
+}
+
+/*
 		Frees memory allocated via ldv_malloc
 		Params: pointer to memory
 		Return: none
 */
 static void* ldv_malloc(void* ptr, size_t nsize)
 {
-
+	BlockHead* fit_head = find_fit_head(ptr, nsize);
+	if (fit_head == 0)
+		return 0;
+	/*	Allocation of memory */
+	return 0;
 }
 
 /*
@@ -252,15 +282,14 @@ static void* ldv_frealloc(void* ud, void* ptr, size_t osize, size_t nsize)
 	(void)(ud); (void)(osize);	/*Unused parameters*/
 	if (nsize == 0)
 	{
-		//	Deletion of block
+		ldv_free(ptr);
 		return 0;
 	}
 	if (osize != 0)
 	{
-		//	Release memory
+		ldv_free(ptr);
 	}
-	//	Creation new memory
-	return 0 /*new created ptr*/;
+	return ldv_malloc(ptr, nsize);
 }
 
 /*
