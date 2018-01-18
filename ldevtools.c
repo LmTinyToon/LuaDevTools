@@ -186,16 +186,6 @@ void set_status(BlockHead* binfo, StateStatus status)
 }
 
 /*
-		Gets blocks info at raw pointer
-		Params: raw pointer
-		Return: blocks info
-*/
-static BlockHead* blocks_info(void* ptr)
-{
-	return (BlockHead*)(ptr) - 2;
-}
-
-/*
 		Gets block head with given offset
 		Params: block, offset type, block offset
 		Return: offset block head
@@ -214,7 +204,7 @@ static BlockHead* raw_move_head(BlockHead* head, HeadType head_type, ldv_block_t
 */
 static void ldv_free(void* ptr)
 {
-	BlockHead* b_info = blocks_info(ptr);
+	BlockHead* b_info = (BlockHead*)(RAW_MEMORY(ptr) - 2);
 	set_status(b_info, Garbage);
 	ldv_block_type bheads_offsets[2] = {0, get_head_offset(b_info, PrevHead)};
 	for (int i = 0; i < 2; ++i)
@@ -292,7 +282,7 @@ static void* ldv_malloc(size_t nsize)
 	{
 		set_head(next_block, PrevHead, next_block_off);
 	}
-	return RAW_MEMORY(fit_head);
+	return RAW_MEMORY(fit_head) + 2;
 }
 
 /*
