@@ -102,7 +102,7 @@ static int valid_block(ldv_block_type* block)
 */
 static ldv_block_type block_data_mask(void)
 {
-	return (1 << sizeof(ldv_block_type) * 8) - 1;
+	return (1 << (sizeof(ldv_block_type) * 8) - 1) - 1;
 }
 
 /*
@@ -112,7 +112,7 @@ static ldv_block_type block_data_mask(void)
 */
 static ldv_block_type block_flag_mask(void)
 {
-	return 1 << sizeof(ldv_block_type) * 8;
+	return 1 << (sizeof(ldv_block_type) * 8 - 1);
 }
 
 /*
