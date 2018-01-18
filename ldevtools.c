@@ -332,6 +332,11 @@ lua_State* ldv_new_debug_lua_state()
 	return lua_newstate(ldv_frealloc, 0);
 }
 
+void (ldv_initialize_heap)()
+{
+	ldv_init_memory();
+}
+
 void (ldv_dump_ldv_heap_layout)()
 {
 	BlockHead* start_head = (BlockHead*)mem_buf;

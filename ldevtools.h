@@ -17,6 +17,13 @@
 LUA_API lua_State* (ldv_new_debug_lua_state)();
 
 /*
+		Initializes custom ldv heap 
+		Params: none
+		Return: none
+*/
+LUA_API void (ldv_initialize_heap)();
+
+/*
 		Dumps layout of ldv heap
 		Params: none
 		Return: none
