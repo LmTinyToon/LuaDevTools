@@ -265,8 +265,24 @@ static void* ldv_malloc(void* ptr, size_t nsize)
 	BlockHead* fit_head = find_fit_head(ptr, nsize);
 	if (fit_head == 0)
 		return 0;
-	/*	Allocation of memory */
-	return 0;
+	set_status(fit_head, Gem);
+	ldv_block_type next_head_off = get_head_offset(fit_head, NextHead);
+	ldv_block_type next_block_off = 2 + nsize / sizeof(ldv_block_type) + ( nsize % sizeof(ldv_block_type) == 0 ? 0 : 1);
+	BlockHead* next_block = get_bhead(fit_head, next_block_off);
+	if (next_block_off < next_head_off)
+	{
+		set_head(next_block, NextHead, next_head_off - next_block_off);
+		if (status(next_block, NextHeadState) == MiddleHead)
+		{
+			set_head(get_bhead(fit_head, next_head_off), PrevHead, next_block_off - next_head_off);
+		}
+	}
+	set_head(fit_head, NextHead, next_head_off);
+	if (status(next_block, NextHeadState) == MiddleHead)
+	{
+		set_head(next_block, PrevHead, -next_head_off);
+	}
+	return RAW_MEMORY(fit_head);
 }
 
 /*
