@@ -228,7 +228,7 @@ static void ldv_free(void* ptr)
 				set_head(bhead, NextHead, next_offset + next_next_offset);
 				if (status(next_head, NextHeadState) == MiddleHead)
 				{
-					set_head(get_bhead(bhead, next_offset + next_next_offset), PrevHead, -next_offset - next_next_offset);
+					set_head(get_bhead(bhead, next_offset + next_next_offset), PrevHead, next_offset + next_next_offset);
 				}
 			}
 		}
@@ -288,7 +288,7 @@ static void* ldv_malloc(size_t nsize)
 	set_head(fit_head, NextHead, next_block_off);
 	if (status(fit_head, NextHeadState) == MiddleHead)
 	{
-		set_head(next_block, PrevHead, -next_block_off);
+		set_head(next_block, PrevHead, next_block_off);
 	}
 	return RAW_MEMORY(fit_head);
 }
