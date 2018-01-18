@@ -17,6 +17,8 @@ typedef unsigned int ldv_block_type;
 //	Data
 //		Maximal buffer size
 #define MEM_BUFF_SIZE 1000000
+//		Gets raw memory
+#define RAW_MEMORY(x) ((ldv_block_type*)x)
 
 /*	All states of head*/
 enum StateType
@@ -86,6 +88,16 @@ static void ldv_log(const char* format, ...)
 }
 
 /*
+		Checks, whether block is lied within memory pool
+		Params: block
+		Return: check result
+*/
+static int valid_block(ldv_block_type* block)
+{
+	return mem_buf <= block && block < mem_buf + MEM_BUFF_SIZE;
+}
+
+/*
 		Gets data mask, which defines data layout in block info
 		Params: none
 		Return: block data mask
@@ -106,18 +118,30 @@ static ldv_block_type block_flag_mask(void)
 }
 
 /*
-        Sets new index with flag to blocks info
+        Sets next/prev head to BlockHead
         Params: blocks info, head type, index
         Return: none
 */
-static void set_index(BlockHead* binfo, HeadType head_type, ldv_block_type index)
+static void set_head(BlockHead* binfo, HeadType head_type, ldv_block_type head)
 {
+	int data_mask = block_data_mask();
     ldv_block_type* index_ptr = head_type == NextHead ? &binfo->next_index : &binfo->prev_index;
-    *index_ptr = *index_ptr & block_flag_mask() | index & block_data_mask();
+    *index_ptr = (valid_block(RAW_MEMORY(binfo) + (*index_ptr & data_mask)) ? data_mask : 0) | head & block_data_mask();
 }
 
 /*
-        Returns status of current state type
+		Gets head of head type
+		Params: block head, head type
+		Return: head of head type
+*/
+static ldv_block_type get_head_offset(BlockHead* bhead, HeadType head_type)
+{
+	int data_mask = block_data_mask();
+	return head_type == NextHead ? bhead->next_index & data_mask : bhead->prev_index & data_mask;
+}
+
+/*
+        Gets status of current state type
         Params: block info, state type
         Return: state status
 */
@@ -137,6 +161,25 @@ StateStatus status(BlockHead* binfo, StateType flag)
 }
 
 /*
+		Sets state status of block head
+		Params: block head
+		Return: none
+*/
+void set_status(BlockHead* binfo, StateStatus status)
+{
+	int mask = block_flag_mask();
+	switch (status)
+	{
+		case Gem:
+			binfo->prev_index = binfo->prev_index | mask;
+			break;
+		case Garbage:
+			binfo->prev_index = binfo->prev_index & (~mask);
+			break;
+	}
+}
+
+/*
 		Gets blocks info at raw pointer
 		Params: raw pointer
 		Return: blocks info
@@ -147,56 +190,13 @@ static BlockHead* blocks_info(void* ptr)
 }
 
 /*
-		Checks, whether block is valid
-		Params: block
-		Return: check result
+		Gets block head with given offset
+		Params: block, block offset
+		Return: offset block head
 */
-static int block_is_valid(BlockHead* block)
+static BlockHead* get_bhead(BlockHead* block, ldv_block_type offset)
 {
-	return mem_buf <= (ldv_block_type*)block && (ldv_block_type*)block < mem_buf + MEM_BUFF_SIZE;
-}
-
-/*
-		Next blocks count
-		Params: block
-		Return: next blocks count
-*/
-static ldv_block_type nblock(BlockHead* block)
-{
-	return block->next_index & block_data_mask();
-}
-
-/*
-		Prev blocks count
-		Params: block
-		Return: prev blocks count
-*/
-static ldv_block_type pblock(BlockHead* block)
-{
-	return block->prev_index & block_data_mask();
-}
-
-/*
-		Gets previous block info
-		Params: block info
-		Return: prev block info
-*/
-static BlockHead* prev_block_info(BlockHead* block)
-{
-	BlockHead* prev_block = (BlockHead*)((ldv_block_type*)block - (block->prev_index & block_data_mask()));
-	return block_is_valid((BlockHead*)prev_block) ? prev_block : 0;
-}
-
-
-/*
-		Gets next block info
-		Params: block info
-		Return: next block info
-*/
-static BlockHead* next_block_info(BlockHead* block)
-{
-	BlockHead* next_block =  (BlockHead*)((ldv_block_type*)block + (block->prev_index & block_data_mask()));
-	return block_is_valid(next_block) ? next_block : 0;
+	return (BlockHead*)(RAW_MEMORY(block) + offset);
 }
 
 /*
@@ -207,15 +207,20 @@ static BlockHead* next_block_info(BlockHead* block)
 static void ldv_free(void* ptr)
 {
 	BlockHead* b_info = blocks_info(ptr);
+	set_status(b_info, Garbage);
 	if (status(b_info, NextHeadState) == MiddleHead)
 	{
-		BlockHead* n_block = next_block_info(b_info);
-        set_index(b_info,  NextHead, nblock(b_info) + nblock(n_block));
-        BlockHead* nnbinfo = next_block_info(n_block);
-        if (block_is_valid(nnbinfo))
-        {
-            set_index(nnbinfo, PrevHead, pblock(nnbinfo) - pblock(n_block));
-        }
+		ldv_block_type next_offset = get_head_offset(b_info, NextHead);
+		BlockHead* next_head = get_bhead(b_info, next_offset);
+		if (status(next_head, DataState) == Garbage)
+		{
+			ldv_block_type next_next_offset = get_head_offset(next_head, NextHead);
+			set_head(b_info, NextHead, next_offset + next_next_offset);
+			if (status(next_head, NextHeadState) == MiddleHead)
+			{
+				set_head(get_bhead(b_info, next_offset + next_next_offset), PrevHead, -next_offset - next_next_offset);
+			}
+		}
 	}
 	/*  Implement handling left "merging"   */
 }
