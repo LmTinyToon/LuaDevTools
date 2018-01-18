@@ -349,14 +349,14 @@ void (ldv_dump_ldv_heap_layout)()
 {
 	BlockHead* start_head = (BlockHead*)mem_buf;
 	ldv_log("======  LDV memory layout [%p, %p)         ===============\n", mem_buf, mem_buf + MEM_BUFF_SIZE);
-	int heads_count = 0;
-	while (status(start_head, NextHeadState) == MiddleHead)
+	for (int heads_count = 1; ; ++heads_count)
 	{
-		++heads_count;
 		ldv_block_type prev = get_head_offset(start_head, PrevHead);
 		ldv_block_type next = get_head_offset(start_head, NextHead);
 		const char* data_status = status(start_head, DataState) == Gem ? "GEM" : "GARBAGE";
 		ldv_log("HEAD %i, address %p, prev %i, next %i, data type %s \n", heads_count, start_head, prev, next, data_status);
+		if (status(start_head, NextHeadState) == MarginHead)
+			break;
 		start_head = get_bhead(start_head, next);
 	}
 	ldv_log("==========================================================\n");
