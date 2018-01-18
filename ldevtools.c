@@ -306,13 +306,13 @@ static int ldv_init_memory()
 //	Public API implementation
 void* ldv_frealloc(void* ud, void* ptr, size_t osize, size_t nsize)
 {
-	(void)(ud); (void)(osize);	/*Unused parameters*/
+	(void)(ud);	/*Unused parameters*/
 	if (nsize == 0)
 	{
 		ldv_free(ptr);
 		return 0;
 	}
-	if (osize != 0)
+	if (ptr != 0 && osize != 0)
 	{
 		ldv_free(ptr);
 	}
