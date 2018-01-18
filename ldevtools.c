@@ -197,12 +197,14 @@ static BlockHead* blocks_info(void* ptr)
 
 /*
 		Gets block head with given offset
-		Params: block, block offset
+		Params: block, offset type, block offset
 		Return: offset block head
 */
-static BlockHead* get_bhead(BlockHead* block, ldv_block_type offset)
+static BlockHead* raw_move_head(BlockHead* head, HeadType head_type, ldv_block_type offset)
 {
-	return (BlockHead*)(RAW_MEMORY(block) + offset);
+	if (head_type == NextHead)
+		return (BlockHead*)(RAW_MEMORY(head) + offset);
+	return (BlockHead*)(RAW_MEMORY(head) - offset);
 }
 
 /*
@@ -217,18 +219,18 @@ static void ldv_free(void* ptr)
 	ldv_block_type bheads_offsets[2] = {0, get_head_offset(b_info, PrevHead)};
 	for (int i = 0; i < 2; ++i)
 	{
-		BlockHead* bhead = get_bhead(b_info, bheads_offsets[i]);
+		BlockHead* bhead = raw_move_head(b_info, PrevHead, bheads_offsets[i]);
 		if (status(bhead, DataState) == Garbage && status(bhead, NextHeadState) == MiddleHead)
 		{
 			ldv_block_type next_offset = get_head_offset(bhead, NextHead);
-			BlockHead* next_head = get_bhead(bhead, next_offset);
+			BlockHead* next_head = raw_move_head(bhead, NextHead, next_offset);
 			if (status(next_head, DataState) == Garbage)
 			{
 				ldv_block_type next_next_offset = get_head_offset(next_head, NextHead);
 				set_head(bhead, NextHead, next_offset + next_next_offset);
 				if (status(next_head, NextHeadState) == MiddleHead)
 				{
-					set_head(get_bhead(bhead, next_offset + next_next_offset), PrevHead, next_offset + next_next_offset);
+					set_head(raw_move_head(bhead, NextHead, next_offset + next_next_offset), PrevHead, next_offset + next_next_offset);
 				}
 			}
 		}
@@ -258,7 +260,7 @@ static BlockHead* find_fit_head(size_t nsize)
 		}
 		if (status(start_head, NextHeadState) == MarginHead)
 			break;
-		start_head = get_bhead(start_head, next_offset);
+		start_head = raw_move_head(start_head, NextHead, next_offset);
 	}
 	return best_fit_head;
 }
@@ -276,13 +278,13 @@ static void* ldv_malloc(size_t nsize)
 	set_status(fit_head, Gem);
 	ldv_block_type next_head_off = get_head_offset(fit_head, NextHead);
 	ldv_block_type next_block_off = 2 + nsize / sizeof(ldv_block_type) + ( nsize % sizeof(ldv_block_type) == 0 ? 0 : 1);
-	BlockHead* next_block = get_bhead(fit_head, next_block_off);
+	BlockHead* next_block = raw_move_head(fit_head, NextHead, next_block_off);
 	if (next_block_off < next_head_off)
 	{
 		set_head(next_block, NextHead, next_head_off - next_block_off);
 		if (status(next_block, NextHeadState) == MiddleHead)
 		{
-			set_head(get_bhead(fit_head, next_head_off), PrevHead, next_block_off - next_head_off);
+			set_head(raw_move_head(fit_head, NextHead, next_head_off), PrevHead, next_block_off - next_head_off);
 		}
 	}
 	set_head(fit_head, NextHead, next_block_off);
@@ -344,7 +346,7 @@ void (ldv_dump_ldv_heap_layout)()
 		ldv_log("HEAD %i, address %p, prev %i, next %i, data type %s \n", heads_count, start_head, prev, next, data_status);
 		if (status(start_head, NextHeadState) == MarginHead)
 			break;
-		start_head = get_bhead(start_head, next);
+		start_head = raw_move_head(start_head, NextHead, next);
 	}
 	ldv_log("==========================================================\n");
 }
