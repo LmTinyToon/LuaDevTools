@@ -20,11 +20,26 @@ typedef unsigned int ldv_block_type;
 #define NEXT_BLOCK 1
 #define PREV_BLOCK 0
 
-enum StateFlag
+/*	All states of head*/
+enum StateType
 {
-	DataType,
-	NextHeadState,
-	PrevHeadState
+	DataState,		/* Data state of head (garbage or not) */
+	NextHeadState,  /* Border head state */
+	PrevHeadState   /* Border head state */
+};
+
+/*	Available statuses of states  */
+enum StateStatus
+{
+	Error,		/*  Such status indicates corruption. It is error, and it is not supposed to be returned */
+
+	/*	Possible states of DataState	*/
+	Gem,		/*	Data is actual	*/
+	Garbage,	/*	Data represent garbage. It has any meaning.	*/
+
+	/*	Possible states of NextHeadState/PrevHeadState	*/
+	MarginHead,	/*	Head is located at border of available memory pool. Any changes of such head/data is forbided.	*/
+	MiddleHead	/*	Head is located within memory pool. You can change head/data.	*/
 };
 
 //		Output char buffer
@@ -87,13 +102,13 @@ static ldv_block_type block_flag_mask(void)
 
 /*
         Sets new index with flag to blocks info
-        Params: blocks info, next index flag, index, val flag
+        Params: blocks info, next index flag, index
         Return: none
 */
-static void set_index(BlockHead* binfo, int is_next, ldv_block_type index, int flag)
+static void set_index(BlockHead* binfo, int is_next, ldv_block_type index)
 {
     ldv_block_type* index_ptr = is_next ? &binfo->next_index : &binfo->prev_index;
-    *index_ptr = flag ? block_flag_mask() | index : index;
+    *index_ptr = *index_ptr & block_flag_mask() | index & block_data_mask();
 }
 
 /*
@@ -107,23 +122,23 @@ int is_empty(BlockHead* binfo)
 }
 
 /*
-        Checks, whether specified flag is set
-        Params: block info, flag
-        Return: check result
+        Returns status of current state type
+        Params: block info, state type
+        Return: state status
 */
-int check(BlockHead* binfo, StateFlag flag)
+StateStatus status(BlockHead* binfo, StateType flag)
 {
 	int mask = block_flag_mask();
 	switch (flag)
 	{
-		case DataType: 
-			return binfo->prev_index & mask;
+		case DataState: 
+			return binfo->prev_index & mask ? Gem : Garbage;
 		case NextHeadState: 
-			return binfo->next_index & mask;
+			return binfo->next_index & mask ? MiddleHead : MarginHead;
 		case PrevHeadState:
-			return binfo->prev_index & ~mask == 0;
+			return binfo->prev_index & (~mask) != 0 ? MiddleHead : MarginHead;
 	}
-	return 0;
+	return Error;
 }
 
 /*
@@ -197,14 +212,14 @@ static BlockHead* next_block_info(BlockHead* block)
 static void ldv_free(void* ptr)
 {
 	BlockHead* b_info = blocks_info(ptr);
-	BlockHead* n_block = next_block_info(b_info);
-	if (block_is_valid(n_block) && check(n_block, DataType))
+	if (status(b_info, NextHeadState) == MiddleHead)
 	{
-        set_index(b_info,  NEXT_BLOCK, nblock(b_info) + nblock(n_block), DataType);
+		BlockHead* n_block = next_block_info(b_info);
+        set_index(b_info,  NEXT_BLOCK, nblock(b_info) + nblock(n_block));
         BlockHead* nnbinfo = next_block_info(n_block);
         if (block_is_valid(nnbinfo))
         {
-            set_index(nnbinfo, PREV_BLOCK, pblock(nnbinfo) - pblock(n_block), DataType);
+            set_index(nnbinfo, PREV_BLOCK, pblock(nnbinfo) - pblock(n_block));
         }
 	}
 	/*  Implement handling left "merging"   */
