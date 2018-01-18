@@ -51,10 +51,8 @@ enum StateStatus
 
 //		Output char buffer
 static char out_buff[1000];
-//		Index of first free block
-static int  block_index = 0;
 //		Memory buffer
-static ldv_block_type mem_buf[MEM_BUFF_SIZE];
+static ldv_block_type mem_buf[MEM_BUFF_SIZE] = {0};
 
 /*
         Helper structure to mark blocks in memory buffer. It is used by memory manager
@@ -322,8 +320,7 @@ static int ldv_init_memory()
 	}
 	for (int i = 0; i < MEM_BUFF_SIZE; ++i)
 		mem_buf[i] = 0;
-	block_index = 0;
-	mem_buf[block_index] = 1 << sizeof(ldv_block_type) | MEM_BUFF_SIZE;
+	set_head((BlockHead*)(mem_buf), NextHead, MEM_BUFF_SIZE);
 	return 0;
 }
 
@@ -333,6 +330,23 @@ lua_State* ldv_new_debug_lua_state()
 	if (ldv_init_memory() != 0)
 		return 0;
 	return lua_newstate(ldv_frealloc, 0);
+}
+
+void (ldv_dump_ldv_heap_layout)()
+{
+	BlockHead* start_head = (BlockHead*)mem_buf;
+	ldv_log("======  LDV memory layout [%p, %p)         ===============\n", mem_buf, mem_buf + MEM_BUFF_SIZE);
+	int heads_count = 0;
+	while (status(start_head, NextHeadState) == MiddleHead)
+	{
+		++heads_count;
+		ldv_block_type prev = get_head_offset(start_head, PrevHead);
+		ldv_block_type next = get_head_offset(start_head, NextHead);
+		const char* data_status = status(start_head, DataState) == Gem ? "GEM" : "GARBAGE";
+		ldv_log("HEAD %i, address %p, prev %i, next %i, data type %s \n", heads_count, start_head, prev, next, data_status);
+		start_head = get_bhead(start_head, next);
+	}
+	ldv_log("==========================================================\n");
 }
 
 void ldv_dump_call_infos(lua_State* L)

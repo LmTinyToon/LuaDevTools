@@ -17,6 +17,13 @@
 LUA_API lua_State* (ldv_new_debug_lua_state)();
 
 /*
+		Dumps layout of ldv heap
+		Params: none
+		Return: none
+*/
+LUA_API void (ldv_dump_ldv_heap_layout)();
+
+/*
 		Dumps calling infos
 		Params: lua state
 		Return: none
