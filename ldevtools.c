@@ -208,21 +208,25 @@ static void ldv_free(void* ptr)
 {
 	BlockHead* b_info = blocks_info(ptr);
 	set_status(b_info, Garbage);
-	if (status(b_info, NextHeadState) == MiddleHead)
+	ldv_block_type bheads_offsets[2] = {0, get_head_offset(b_info, PrevHead)};
+	for (int i = 0; i < 2; ++i)
 	{
-		ldv_block_type next_offset = get_head_offset(b_info, NextHead);
-		BlockHead* next_head = get_bhead(b_info, next_offset);
-		if (status(next_head, DataState) == Garbage)
+		BlockHead* bhead = get_bhead(b_info, bheads_offsets[i]);
+		if (status(bhead, DataState) == Garbage && status(bhead, NextHeadState) == MiddleHead)
 		{
-			ldv_block_type next_next_offset = get_head_offset(next_head, NextHead);
-			set_head(b_info, NextHead, next_offset + next_next_offset);
-			if (status(next_head, NextHeadState) == MiddleHead)
+			ldv_block_type next_offset = get_head_offset(bhead, NextHead);
+			BlockHead* next_head = get_bhead(bhead, next_offset);
+			if (status(next_head, DataState) == Garbage)
 			{
-				set_head(get_bhead(b_info, next_offset + next_next_offset), PrevHead, -next_offset - next_next_offset);
+				ldv_block_type next_next_offset = get_head_offset(next_head, NextHead);
+				set_head(bhead, NextHead, next_offset + next_next_offset);
+				if (status(next_head, NextHeadState) == MiddleHead)
+				{
+					set_head(get_bhead(bhead, next_offset + next_next_offset), PrevHead, -next_offset - next_next_offset);
+				}
 			}
 		}
 	}
-	/*  Implement handling left "merging"   */
 }
 
 /*
