@@ -21,22 +21,22 @@ typedef unsigned int ldv_block_type;
 #define RAW_MEMORY(x) ((ldv_block_type*)x)
 
 /*	All states of head*/
-enum StateType
+typedef enum StateType
 {
 	DataState,		/* Data state of head (garbage or not) */
 	NextHeadState,  /* Border head state */
 	PrevHeadState   /* Border head state */
-};
+}   StateType;
 
 /*	HeadType	*/
-enum HeadType
+typedef enum HeadType
 {
 	NextHead,	/*	Next head after current head.	*/
 	PrevHead	/*	Previous head before current head.	*/
-};
+} HeadType;
 
 /*	Available statuses of states  */
-enum StateStatus
+typedef enum StateStatus
 {
 	Error,		/*  Such status indicates corruption. It is error, and it is not supposed to be returned */
 
@@ -47,7 +47,7 @@ enum StateStatus
 	/*	Possible states of NextHeadState/PrevHeadState	*/
 	MarginHead,	/*	Head is located at border of available memory pool. Any changes of such head/data is forbided.	*/
 	MiddleHead	/*	Head is located within memory pool. You can change head/data.	*/
-};
+} StateStatus;
 
 //		Output char buffer
 static char out_buff[1000];
@@ -57,13 +57,13 @@ static ldv_block_type mem_buf[MEM_BUFF_SIZE] = { MEM_BUFF_SIZE };
 /*
         Helper structure to mark blocks in memory buffer. It is used by memory manager
 */
-struct BlockHead
+typedef struct BlockHead
 {
     /*  Index (offset) to next block    */
     ldv_block_type next_index;
     /*  Index (offset) to previous block    */
     ldv_block_type prev_index;
-};
+} BlockHead;
 
 //	Internal helpers
 /*
@@ -156,9 +156,9 @@ StateStatus status(BlockHead* binfo, StateType flag)
 	int mask = block_flag_mask();
 	switch (flag)
 	{
-		case DataState: 
+		case DataState:
 			return binfo->prev_index & mask ? Gem : Garbage;
-		case NextHeadState: 
+		case NextHeadState:
 			return binfo->next_index & mask ? MiddleHead : MarginHead;
 		case PrevHeadState:
 			return (binfo->prev_index & (~mask)) != 0 ? MiddleHead : MarginHead;
