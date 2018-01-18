@@ -1,3 +1,8 @@
+# Ignored directories
+Temp/
+Bin/
+Lib/
+
 # Prerequisites
 *.d
 
