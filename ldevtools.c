@@ -131,7 +131,7 @@ static void set_head(BlockHead* binfo, HeadType head_type, ldv_block_type head)
 	}
 	else
 	{
-		binfo->prev_index = (valid_block(RAW_MEMORY(binfo) + cl_head) ? cl_head : 0) | (block_flag_mask() & binfo->prev_index);
+		binfo->prev_index = (valid_block(RAW_MEMORY(binfo) - cl_head) ? cl_head : 0) | (block_flag_mask() & binfo->prev_index);
 	}
 }
 
