@@ -292,29 +292,6 @@ static void* ldv_malloc(void* ptr, size_t nsize)
 }
 
 /*
-		LDV frealloc function
-		Params: user data, ptr to data, original size, new size
-		Return: ptr to freallocated memory
-
-		NOTE: Freallocation works inside static memory pool.
-		Such behaviour "simulates" "fixed" pointers during lua session.
-*/
-static void* ldv_frealloc(void* ud, void* ptr, size_t osize, size_t nsize)
-{
-	(void)(ud); (void)(osize);	/*Unused parameters*/
-	if (nsize == 0)
-	{
-		ldv_free(ptr);
-		return 0;
-	}
-	if (osize != 0)
-	{
-		ldv_free(ptr);
-	}
-	return ldv_malloc(ptr, nsize);
-}
-
-/*
 		Initializes memory buffer
 		Params: none
 		Return: error code
@@ -333,11 +310,19 @@ static int ldv_init_memory()
 }
 
 //	Public API implementation
-lua_State* ldv_new_debug_lua_state()
+static void* ldv_frealloc(void* ud, void* ptr, size_t osize, size_t nsize)
 {
-	if (ldv_init_memory() != 0)
+	(void)(ud); (void)(osize);	/*Unused parameters*/
+	if (nsize == 0)
+	{
+		ldv_free(ptr);
 		return 0;
-	return lua_newstate(ldv_frealloc, 0);
+	}
+	if (osize != 0)
+	{
+		ldv_free(ptr);
+	}
+	return ldv_malloc(ptr, nsize);
 }
 
 void (ldv_initialize_heap)()

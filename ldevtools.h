@@ -10,18 +10,21 @@
 
 //	Public API
 /*
-		Creates new debug lua state
-		Params: none
-		Return: created new debug lua state
-*/
-LUA_API lua_State* (ldv_new_debug_lua_state)();
-
-/*
 		Initializes custom ldv heap 
 		Params: none
 		Return: none
 */
 LUA_API void (ldv_initialize_heap)();
+
+/*
+		LDV frealloc function
+		Params: user data, ptr to data, original size, new size
+		Return: ptr to freallocated memory
+
+		NOTE: Freallocation works inside static memory pool.
+		Such behaviour "simulates" "fixed" pointers during lua session.
+*/
+LUA_API void* ldv_frealloc(void* ud, void* ptr, size_t osize, size_t nsize);
 
 /*
 		Dumps layout of ldv heap
