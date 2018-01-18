@@ -124,7 +124,7 @@ static void set_head(BlockHead* binfo, HeadType head_type, ldv_block_type head)
 {
 	int data_mask = block_data_mask();
     ldv_block_type* index_ptr = head_type == NextHead ? &binfo->next_index : &binfo->prev_index;
-    *index_ptr = (valid_block(RAW_MEMORY(binfo) + (*index_ptr & data_mask)) ? data_mask : 0) | head & block_data_mask();
+    *index_ptr = (valid_block(RAW_MEMORY(binfo) + (*index_ptr & data_mask)) ? data_mask : 0) | head & data_mask;
 }
 
 /*
@@ -153,7 +153,7 @@ StateStatus status(BlockHead* binfo, StateType flag)
 		case NextHeadState: 
 			return binfo->next_index & mask ? MiddleHead : MarginHead;
 		case PrevHeadState:
-			return binfo->prev_index & (~mask) != 0 ? MiddleHead : MarginHead;
+			return (binfo->prev_index & (~mask)) != 0 ? MiddleHead : MarginHead;
 	}
 	return Error;
 }
