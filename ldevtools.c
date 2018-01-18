@@ -122,9 +122,17 @@ static ldv_block_type block_flag_mask(void)
 */
 static void set_head(BlockHead* binfo, HeadType head_type, ldv_block_type head)
 {
-	int data_mask = block_data_mask();
-    ldv_block_type* index_ptr = head_type == NextHead ? &binfo->next_index : &binfo->prev_index;
-    *index_ptr = (valid_block(RAW_MEMORY(binfo) + (*index_ptr & data_mask)) ? data_mask : 0) | head & data_mask;
+	const int data_mask = block_data_mask();
+	const int flag_mask = block_flag_mask();
+	const ldv_block_type cl_head = head & data_mask;
+	if (head_type == NextHead)
+	{
+		binfo->next_index = (valid_block(RAW_MEMORY(binfo) + cl_head) ? block_flag_mask() : 0) | cl_head;
+	}
+	else
+	{
+		binfo->prev_index = (valid_block(RAW_MEMORY(binfo) + cl_head) ? cl_head : 0) | (block_flag_mask() & binfo->prev_index);
+	}
 }
 
 /*
