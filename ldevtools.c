@@ -17,8 +17,6 @@ typedef unsigned int ldv_block_type;
 //	Data
 //		Maximal buffer size
 #define MEM_BUFF_SIZE 1000000
-#define NEXT_BLOCK 1
-#define PREV_BLOCK 0
 
 /*	All states of head*/
 enum StateType
@@ -26,6 +24,13 @@ enum StateType
 	DataState,		/* Data state of head (garbage or not) */
 	NextHeadState,  /* Border head state */
 	PrevHeadState   /* Border head state */
+};
+
+/*	HeadType	*/
+enum HeadType
+{
+	NextHead,	/*	Next head after current head.	*/
+	PrevHead	/*	Previous head before current head.	*/
 };
 
 /*	Available statuses of states  */
@@ -102,23 +107,13 @@ static ldv_block_type block_flag_mask(void)
 
 /*
         Sets new index with flag to blocks info
-        Params: blocks info, next index flag, index
+        Params: blocks info, head type, index
         Return: none
 */
-static void set_index(BlockHead* binfo, int is_next, ldv_block_type index)
+static void set_index(BlockHead* binfo, HeadType head_type, ldv_block_type index)
 {
-    ldv_block_type* index_ptr = is_next ? &binfo->next_index : &binfo->prev_index;
+    ldv_block_type* index_ptr = head_type == NextHead ? &binfo->next_index : &binfo->prev_index;
     *index_ptr = *index_ptr & block_flag_mask() | index & block_data_mask();
-}
-
-/*
-        Checks, whether blocks info is empty
-        Params: blocks info
-        Return: check result
-*/
-int is_empty(BlockHead* binfo)
-{
-    return binfo->next_index & block_flag_mask();
 }
 
 /*
@@ -215,11 +210,11 @@ static void ldv_free(void* ptr)
 	if (status(b_info, NextHeadState) == MiddleHead)
 	{
 		BlockHead* n_block = next_block_info(b_info);
-        set_index(b_info,  NEXT_BLOCK, nblock(b_info) + nblock(n_block));
+        set_index(b_info,  NextHead, nblock(b_info) + nblock(n_block));
         BlockHead* nnbinfo = next_block_info(n_block);
         if (block_is_valid(nnbinfo))
         {
-            set_index(nnbinfo, PREV_BLOCK, pblock(nnbinfo) - pblock(n_block));
+            set_index(nnbinfo, PrevHead, pblock(nnbinfo) - pblock(n_block));
         }
 	}
 	/*  Implement handling left "merging"   */
