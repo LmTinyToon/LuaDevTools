@@ -34,7 +34,7 @@ static ldv_block_type mem_buf[MEM_BUFF_SIZE];
 /*
         Helper structure to mark blocks in memory buffer. It is used by memory manager
 */
-struct _BlocksInfo
+struct BlockHead
 {
     /*  Index (offset) to next block    */
     ldv_block_type next_index;
@@ -87,7 +87,7 @@ static ldv_block_type block_flag_mask(void)
         Params: blocks info, next index flag, index, val flag
         Return: none
 */
-static void set_index(_BlocksInfo* binfo, int is_next, ldv_block_type index, int flag)
+static void set_index(BlockHead* binfo, int is_next, ldv_block_type index, int flag)
 {
     ldv_block_type* index_ptr = is_next ? &binfo->next_index : &binfo->prev_index;
     *index_ptr = flag ? block_flag_mask() | index : index;
@@ -98,7 +98,7 @@ static void set_index(_BlocksInfo* binfo, int is_next, ldv_block_type index, int
         Params: blocks info
         Return: check result
 */
-int is_empty(_BlocksInfo* binfo)
+int is_empty(BlockHead* binfo)
 {
     return binfo->next_index & block_flag_mask();
 }
@@ -108,7 +108,7 @@ int is_empty(_BlocksInfo* binfo)
         Params: block info, flag
         Return: check result
 */
-int check(_BlocksInfo* binfo, int flag)
+int check(BlockHead* binfo, int flag)
 {
     /*  TODO: (alex) add usage of enums */
     int mask = block_flag_mask();
@@ -124,9 +124,9 @@ int check(_BlocksInfo* binfo, int flag)
 		Params: raw pointer
 		Return: blocks info
 */
-static _BlocksInfo* blocks_info(void* ptr)
+static BlockHead* blocks_info(void* ptr)
 {
-	return (_BlocksInfo*)(ptr) - 2;
+	return (BlockHead*)(ptr) - 2;
 }
 
 /*
@@ -134,7 +134,7 @@ static _BlocksInfo* blocks_info(void* ptr)
 		Params: block
 		Return: check result
 */
-static int block_is_valid(_BlocksInfo* block)
+static int block_is_valid(BlockHead* block)
 {
 	return mem_buf <= (ldv_block_type*)block && (ldv_block_type*)block < mem_buf + MEM_BUFF_SIZE;
 }
@@ -144,7 +144,7 @@ static int block_is_valid(_BlocksInfo* block)
 		Params: block
 		Return: next blocks count
 */
-static ldv_block_type nblock(_BlocksInfo* block)
+static ldv_block_type nblock(BlockHead* block)
 {
 	return block->next_index & block_data_mask();
 }
@@ -154,7 +154,7 @@ static ldv_block_type nblock(_BlocksInfo* block)
 		Params: block
 		Return: prev blocks count
 */
-static ldv_block_type pblock(_BlocksInfo* block)
+static ldv_block_type pblock(BlockHead* block)
 {
 	return block->prev_index & block_data_mask();
 }
@@ -164,10 +164,10 @@ static ldv_block_type pblock(_BlocksInfo* block)
 		Params: block info
 		Return: prev block info
 */
-static _BlocksInfo* prev_block_info(_BlocksInfo* block)
+static BlockHead* prev_block_info(BlockHead* block)
 {
-	_BlocksInfo* prev_block = (_BlocksInfo*)((ldv_block_type*)block - (block->prev_index & block_data_mask()));
-	return block_is_valid((_BlocksInfo*)prev_block) ? prev_block : 0;
+	BlockHead* prev_block = (BlockHead*)((ldv_block_type*)block - (block->prev_index & block_data_mask()));
+	return block_is_valid((BlockHead*)prev_block) ? prev_block : 0;
 }
 
 
@@ -176,9 +176,9 @@ static _BlocksInfo* prev_block_info(_BlocksInfo* block)
 		Params: block info
 		Return: next block info
 */
-static _BlocksInfo* next_block_info(_BlocksInfo* block)
+static BlockHead* next_block_info(BlockHead* block)
 {
-	_BlocksInfo* next_block =  (_BlocksInfo*)((ldv_block_type*)block + (block->prev_index & block_data_mask()));
+	BlockHead* next_block =  (BlockHead*)((ldv_block_type*)block + (block->prev_index & block_data_mask()));
 	return block_is_valid(next_block) ? next_block : 0;
 }
 
@@ -189,12 +189,12 @@ static _BlocksInfo* next_block_info(_BlocksInfo* block)
 */
 static void ldv_free(void* ptr)
 {
-	_BlocksInfo* b_info = blocks_info(ptr);
-	_BlocksInfo* n_block = next_block_info(b_info);
+	BlockHead* b_info = blocks_info(ptr);
+	BlockHead* n_block = next_block_info(b_info);
 	if (block_is_valid(n_block) && check(n_block, DATA_FLAG))
 	{
         set_index(b_info,  NEXT_BLOCK, nblock(b_info) + nblock(n_block), DATA_FLAG);
-        _BlocksInfo* nnbinfo = next_block_info(n_block);
+        BlockHead* nnbinfo = next_block_info(n_block);
         if (block_is_valid(nnbinfo))
         {
             set_index(nnbinfo, PREV_BLOCK, pblock(nnbinfo) - pblock(n_block), DATA_FLAG);
