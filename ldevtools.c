@@ -20,9 +20,12 @@ typedef unsigned int ldv_block_type;
 #define NEXT_BLOCK 1
 #define PREV_BLOCK 0
 
-#define DATA_FLAG 0
-#define NEXT_FLAG 1
-#define PREV_FLAG 2
+enum StateFlag
+{
+	DataType,
+	NextHeadState,
+	PrevHeadState
+};
 
 //		Output char buffer
 static char out_buff[1000];
@@ -108,15 +111,19 @@ int is_empty(BlockHead* binfo)
         Params: block info, flag
         Return: check result
 */
-int check(BlockHead* binfo, int flag)
+int check(BlockHead* binfo, StateFlag flag)
 {
-    /*  TODO: (alex) add usage of enums */
-    int mask = block_flag_mask();
-    if (flag == DATA_FLAG)
-        return binfo->prev_index & mask;
-    if (flag == NEXT_FLAG)
-        return binfo->next_index & mask;
-    return binfo->prev_index & ~mask == 0;
+	int mask = block_flag_mask();
+	switch (flag)
+	{
+		case DataType: 
+			return binfo->prev_index & mask;
+		case NextHeadState: 
+			return binfo->next_index & mask;
+		case PrevHeadState:
+			return binfo->prev_index & ~mask == 0;
+	}
+	return 0;
 }
 
 /*
@@ -191,13 +198,13 @@ static void ldv_free(void* ptr)
 {
 	BlockHead* b_info = blocks_info(ptr);
 	BlockHead* n_block = next_block_info(b_info);
-	if (block_is_valid(n_block) && check(n_block, DATA_FLAG))
+	if (block_is_valid(n_block) && check(n_block, DataType))
 	{
-        set_index(b_info,  NEXT_BLOCK, nblock(b_info) + nblock(n_block), DATA_FLAG);
+        set_index(b_info,  NEXT_BLOCK, nblock(b_info) + nblock(n_block), DataType);
         BlockHead* nnbinfo = next_block_info(n_block);
         if (block_is_valid(nnbinfo))
         {
-            set_index(nnbinfo, PREV_BLOCK, pblock(nnbinfo) - pblock(n_block), DATA_FLAG);
+            set_index(nnbinfo, PREV_BLOCK, pblock(nnbinfo) - pblock(n_block), DataType);
         }
 	}
 	/*  Implement handling left "merging"   */
