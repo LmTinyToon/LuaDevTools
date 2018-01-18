@@ -243,7 +243,7 @@ static void ldv_free(void* ptr)
 static BlockHead* find_fit_head(size_t nsize)
 {
 	BlockHead* best_fit_head = 0;
-	BlockHead* start_head = blocks_info(mem_buf);
+	BlockHead* start_head = (BlockHead*)mem_buf;
 	for (;;)
 	{
 		ldv_block_type next_offset = get_head_offset(start_head, NextHead);
