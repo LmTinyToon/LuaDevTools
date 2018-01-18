@@ -274,7 +274,7 @@ static void* ldv_malloc(size_t nsize)
 		set_head(next_block, NextHead, next_head_off - next_block_off);
 		if (status(next_block, NextHeadState) == MiddleHead)
 		{
-			set_head(raw_move_head(fit_head, NextHead, next_head_off), PrevHead, next_block_off - next_head_off);
+			set_head(raw_move_head(fit_head, NextHead, next_head_off), PrevHead, next_head_off - next_block_off);
 		}
 	}
 	set_head(fit_head, NextHead, next_block_off);
