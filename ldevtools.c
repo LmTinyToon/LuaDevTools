@@ -356,10 +356,12 @@ void (ldv_dump_hash_strtable)(lua_State* L)
 {
 	stringtable* hash_string_table = &G(L)->strt;
 	ldv_log("======= HASH STRING TABLE DUMP (nuse: %i) (size: %i) ==============\n", hash_string_table->nuse, hash_string_table->size);
-	for (int i = 0; i < hash_string_table->nuse; ++i)
+	for (int i = 0; i < hash_string_table->size; ++i)
 	{
-		ldv_log("=========	List %i of elements	========\n", i);
 		TString **p = &hash_string_table->hash[i];
+		if (*p == NULL)
+			continue;
+		ldv_log("=========	List %i of elements	========\n", i);
 		while (*p != NULL) 
 		{
 			ldv_dump_short_string(L, *p);
