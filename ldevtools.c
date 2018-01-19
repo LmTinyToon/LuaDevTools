@@ -325,11 +325,13 @@ void* ldv_frealloc(void* ud, void* ptr, size_t osize, size_t nsize)
 		ldv_free(ptr);
 		return 0;
 	}
+	void* all_mem = ldv_malloc(nsize);
 	if (ptr != 0 && osize != 0)
 	{
+		memcpy(all_mem, ptr, osize < nsize ? osize : nsize);
 		ldv_free(ptr);
 	}
-	return ldv_malloc(nsize);
+	return all_mem;
 }
 
 void (ldv_dump_ldv_heap_layout)()
