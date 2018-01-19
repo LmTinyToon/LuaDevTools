@@ -214,6 +214,8 @@ static BlockHead* raw_move_head(BlockHead* head, HeadType head_type, ldv_block_t
 */
 static void ldv_free(void* ptr)
 {
+	if (ptr == NULL)
+		return;
 	BlockHead* b_info = (BlockHead*)(RAW_MEMORY(ptr) - 2);
 	set_status(b_info, Garbage);
 	ldv_block_type bheads_offsets[2] = {0, get_head_offset(b_info, PrevHead)};
