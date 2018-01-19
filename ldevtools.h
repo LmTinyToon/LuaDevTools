@@ -19,9 +19,9 @@ LUA_API void (ldv_clear_heap)();
 /*
 		Performs local checks on ldv heap
 		Params: none
-		Return: none
+		Return: error code (0 - success)
 */
-LUA_API void (ldv_check_heap)();
+LUA_API int (ldv_check_heap)();
 
 /*
 		LDV frealloc function
