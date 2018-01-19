@@ -348,7 +348,7 @@ void ldv_portion_dump(const unsigned int fst_head, const unsigned int count)
 	{
 		if (heads_count < fst_head)
 			continue;
-		if (heads_count < fst_head + count)
+		if (heads_count >= fst_head + count)
 			break;
 		ldv_block_type prev = get_head_offset(start_head, PrevHead);
 		ldv_block_type next = get_head_offset(start_head, NextHead);
