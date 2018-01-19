@@ -5,6 +5,7 @@
 //	Includes
 #include "ldevtools.h"
 #include "lstate.h"
+#include "ltable.h"
 
 #ifdef _WIN32
 	#include <windows.h>
@@ -414,7 +415,15 @@ void (ldv_dump_boolean)(lua_State* L, int bool_val)
 
 void (ldv_dump_table)(lua_State* L, Table* table)
 {
-	ldv_log("Type: TABLE \n");
+	const int nsize = sizenode(table);
+	ldv_log("Type: TABLE size() \n", nsize);
+	ldv_log("===========  TABLE CONTENTS ===========\n");
+	for (int i = 0; i < nsize; ++i)
+	{
+		Node* node = &table->node[i];
+		ldv_dump_value(L, gval(node));
+	}
+	ldv_log("===========  TABLE CONTENTS ===========\n");
 }
 
 
@@ -467,7 +476,8 @@ void (ldv_dump_float_number)(lua_State* L, lua_Number float_num)
 
 void (ldv_dump_short_string)(lua_State* L, TString* string)
 {
-	ldv_log("Type: SHORT STRING \n");
+	ldv_log("Type: SHORT STRING (%i) \n", tsslen(string));
+	ldv_log("Value: %s \n", getstr(string));
 }
 
 void (ldv_dump_long_string)(lua_State* L, TString* string)
