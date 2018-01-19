@@ -41,6 +41,13 @@ LUA_API void (ldv_dump_ldv_heap_layout)();
 LUA_API void (ldv_dump_ldv_heap_at_mem)(const void* ptr);
 
 /*
+		Dumpts hash table for strings of global state
+		Params: Lua state
+		Return: none
+*/
+LUA_API void (ldv_dump_hash_strtable)(lua_State* L);
+
+/*
 		Dumps calling infos
 		Params: lua state
 		Return: none
@@ -137,6 +144,13 @@ LUA_API void (ldv_dump_int_number)(lua_State* L, lua_Integer int_num);
 		Return: none
 */
 LUA_API void (ldv_dump_float_number)(lua_State* L, lua_Number float_num);
+
+/*
+		Dumps general str
+		Params: lua state, general lua string
+		Return: none
+*/
+LUA_API void (ldv_dump_str)(lua_State* L, TString* str);
 
 /*
 		Dumps short string object

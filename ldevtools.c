@@ -352,6 +352,23 @@ void (ldv_dump_ldv_heap_at_mem)(const void* ptr)
 	/* Not implemented */
 }
 
+void (ldv_dump_hash_strtable)(lua_State* L)
+{
+	stringtable hash_string_table = G(L)->strt;
+	ldv_log("======= HASH STRING TABLE DUMP (nuse: %i) (size: %i) ==============\n", hash_string_table.nuse, hash_string_table.size);
+	for (int i = 0; i < hash_string_table.nuse; ++i)
+	{
+		TString* str = hash_string_table.hash[i];
+		if (str == NULL)
+		{
+			ldv_log("NULL \n");
+			continue;
+		}
+		ldv_dump_short_string(L, str);
+	}
+	ldv_log("==========================================================\n");
+}
+
 void ldv_dump_call_infos(lua_State* L)
 {
 	ldv_log("=======           LUA CALL INFO DUMP       ==============\n");
@@ -484,6 +501,12 @@ void (ldv_dump_float_number)(lua_State* L, lua_Number float_num)
 	LDV_UNUSED(L)
 	ldv_log("Type: FLOAT NUMBER \n");
 	ldv_log("Value: %f \n", float_num);
+}
+
+void (ldv_dump_str)(lua_State* L, TString* str)
+{
+	/*	What should be located here???*/
+	ldv_dump_short_string(L, str);
 }
 
 void (ldv_dump_short_string)(lua_State* L, TString* string)
