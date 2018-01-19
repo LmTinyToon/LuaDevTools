@@ -16,6 +16,7 @@
 typedef unsigned int ldv_block_type;
 
 //	Data
+#define LDV_UNUSED(x) (void)(x);
 //		Maximal buffer size
 #define MEM_BUFF_SIZE 1000000
 //		Gets raw memory
@@ -315,7 +316,7 @@ void ldv_clear_heap()
 
 void* ldv_frealloc(void* ud, void* ptr, size_t osize, size_t nsize)
 {
-	(void)(ud);	/*Unused parameters*/
+	LDV_UNUSED(ud)
 	if (nsize == 0)
 	{
 		ldv_free(ptr);
@@ -347,6 +348,7 @@ void (ldv_dump_ldv_heap_layout)()
 
 void (ldv_dump_ldv_heap_at_mem)(const void* ptr)
 {
+	LDV_UNUSED(ptr)
 	/* Not implemented */
 }
 
@@ -404,11 +406,13 @@ void (ldv_dump_value)(lua_State* L, TValue* value)
 
 void (ldv_dump_nil)(lua_State* L, TValue* nil_object)
 {
+	LDV_UNUSED(L) LDV_UNUSED(nil_object)
 	ldv_log("Type: NIL OBJECT \n");
 }
 
 void (ldv_dump_boolean)(lua_State* L, int bool_val)
 {
+	LDV_UNUSED(L)
 	ldv_log("Type: BOOLEAN \n");
 	ldv_log("Value: %i \n", bool_val);
 }
@@ -429,22 +433,26 @@ void (ldv_dump_table)(lua_State* L, Table* table)
 
 void (ldv_dump_lua_closure)(lua_State* L, LClosure* lclosure)
 {
+	LDV_UNUSED(L) LDV_UNUSED(lclosure)
 	ldv_log("Type: LUA CLOSURE \n");
 }
 
 void (ldv_dump_c_closure)(lua_State* L, CClosure* cclosure)
 {
+	LDV_UNUSED(L) LDV_UNUSED(cclosure)
 	ldv_log("Type: C CLOSURE \n");
 }
 
 void (ldv_dump_c_light_func)(lua_State* L, lua_CFunction light_func)
 {
+	LDV_UNUSED(L)
 	ldv_log("Type: LIGHT C FUNCTION \n");
 	ldv_log("Value: %p \n", light_func);
 }
 
 void (ldv_dump_thread)(lua_State* L, lua_State* lua_thread)
 {
+	LDV_UNUSED(L)
 	ldv_log("Type: LUA THREAD \n");
 	ldv_log("Stack address %p, Top element %p Call Infos num %i", lua_thread->stack, lua_thread->top, lua_thread->nci);
 
@@ -452,35 +460,41 @@ void (ldv_dump_thread)(lua_State* L, lua_State* lua_thread)
 
 void (ldv_dump_user_data)(lua_State* L, char* user_data)
 {
+	LDV_UNUSED(L)
 	ldv_log("Type: USER DATA \n");
 	ldv_log("Value: %p \n", user_data);
 }
 
 void (ldv_dump_light_user_data)(lua_State* L, void* light_user_data)
 {
+	LDV_UNUSED(L)
 	ldv_log("Type: LIGHT USER DATA \n");
 	ldv_log("Value: %p \n", light_user_data);
 }
 
 void (ldv_dump_int_number)(lua_State* L, lua_Integer int_num)
 {
+	LDV_UNUSED(L)
 	ldv_log("Type: INTEGER NUMBER \n");
 	ldv_log("Value: %i \n", int_num);
 }
 
 void (ldv_dump_float_number)(lua_State* L, lua_Number float_num)
 {
+	LDV_UNUSED(L)
 	ldv_log("Type: FLOAT NUMBER \n");
 	ldv_log("Value: %f \n", float_num);
 }
 
 void (ldv_dump_short_string)(lua_State* L, TString* string)
 {
+	LDV_UNUSED(L)
 	ldv_log("Type: SHORT STRING (%i) \n", tsslen(string));
 	ldv_log("Value: %s \n", getstr(string));
 }
 
 void (ldv_dump_long_string)(lua_State* L, TString* string)
 {
+	LDV_UNUSED(L)
 	ldv_log("Type: LONG STRING \n");
 }
