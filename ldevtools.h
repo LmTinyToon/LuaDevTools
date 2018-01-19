@@ -31,7 +31,14 @@ LUA_API void* (ldv_frealloc)(void* ud, void* ptr, size_t osize, size_t nsize);
 		Params: none
 		Return: none
 */
-LUA_API void (ldv_dump_ldv_heap_layout)();
+LUA_API void (ldv_dump_heap)();
+
+/*
+		Dumps portion layout of ldv heap by heads
+		Params: index of start head, heads count
+		Return: none
+*/
+LUA_API void (ldv_portion_dump)(const unsigned int start_head, const unsigned int heads_count);
 
 /*
 		Dumps ldv heap at memory

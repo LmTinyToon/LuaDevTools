@@ -1,6 +1,7 @@
 //	Standard includes
 #include <stdio.h>
 #include <stdarg.h>
+#include <string.h>
 
 //	Includes
 #include "ldevtools.h"
@@ -334,12 +335,21 @@ void* ldv_frealloc(void* ud, void* ptr, size_t osize, size_t nsize)
 	return all_mem;
 }
 
-void (ldv_dump_ldv_heap_layout)()
+void ldv_dump_heap()
+{
+	ldv_portion_dump(0, MEM_BUFF_SIZE);
+}
+
+void ldv_portion_dump(const unsigned int fst_head, const unsigned int count)
 {
 	BlockHead* start_head = (BlockHead*)mem_buf;
 	ldv_log("======  LDV memory layout [%p, %p)         ===============\n", mem_buf, mem_buf + MEM_BUFF_SIZE);
-	for (int heads_count = 1; ; ++heads_count)
+	for (unsigned int heads_count = 0; ; ++heads_count)
 	{
+		if (heads_count < fst_head)
+			continue;
+		if (heads_count < fst_head + count)
+			break;
 		ldv_block_type prev = get_head_offset(start_head, PrevHead);
 		ldv_block_type next = get_head_offset(start_head, NextHead);
 		const char* data_status = status(start_head, DataState) == Gem ? "GEM" : "GARBAGE";
@@ -349,6 +359,7 @@ void (ldv_dump_ldv_heap_layout)()
 		start_head = raw_move_head(start_head, NextHead, next);
 	}
 	ldv_log("==========================================================\n");
+
 }
 
 void (ldv_dump_ldv_heap_at_mem)(const void* ptr)
