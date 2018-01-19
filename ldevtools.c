@@ -276,7 +276,7 @@ static BlockHead* find_fit_head(size_t nsize)
 }
 
 /*
-		Frees memory allocated via ldv_malloc
+		Allocates memory with size
 		Params: size of needed memory
 		Return: none
 */
@@ -288,9 +288,13 @@ static void* ldv_malloc(size_t nsize)
 	set_status(fit_head, Gem);
 	ldv_block_type next_head_off = get_head_offset(fit_head, NextHead);
 	ldv_block_type next_block_off = 2 + nsize / sizeof(ldv_block_type) + ( nsize % sizeof(ldv_block_type) == 0 ? 0 : 1);
+	/*	TODO: (alex) think about best way to solve problem (next_head - next_block == 1)*/
+	if (next_block_off + 1 == next_head_off)
+		next_block_off = next_head_off;
 	BlockHead* next_block = raw_move_head(fit_head, NextHead, next_block_off);
 	if (next_block_off < next_head_off)
-	{
+	{	
+		set_status(next_block, Garbage);
 		set_head(next_block, NextHead, next_head_off - next_block_off);
 		if (status(next_block, NextHeadState) == MiddleHead)
 		{
