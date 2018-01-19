@@ -129,11 +129,11 @@ static void set_head(BlockHead* binfo, HeadType head_type, ldv_block_type head)
 	const ldv_block_type cl_head = head & data_mask;
 	if (head_type == NextHead)
 	{
-		binfo->next_index = (valid_block(RAW_MEMORY(binfo) + cl_head) ? block_flag_mask() : 0) | cl_head;
+		binfo->next_index = (valid_block(RAW_MEMORY(binfo) + cl_head) ? flag_mask : 0) | cl_head;
 	}
 	else
 	{
-		binfo->prev_index = (valid_block(RAW_MEMORY(binfo) - cl_head) ? cl_head : 0) | (block_flag_mask() & binfo->prev_index);
+		binfo->prev_index = (valid_block(RAW_MEMORY(binfo) - cl_head) ? cl_head : 0) | (flag_mask & binfo->prev_index);
 	}
 }
 
@@ -193,6 +193,9 @@ void set_status(BlockHead* binfo, StateStatus status)
 			break;
 		case Garbage:
 			binfo->prev_index = binfo->prev_index & (~mask);
+			break;
+		default:
+			/*	TODO: (alex) add assertion here?	*/
 			break;
 	}
 }
@@ -522,5 +525,6 @@ void (ldv_dump_short_string)(lua_State* L, TString* string)
 void (ldv_dump_long_string)(lua_State* L, TString* string)
 {
 	LDV_UNUSED(L)
-	ldv_log("Type: LONG STRING \n");
+	ldv_log("Type: LONG STRING (%i) \n", tsslen(string));
+	ldv_log("Value: %s \n", getstr(string));
 }
