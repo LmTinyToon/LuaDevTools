@@ -17,6 +17,13 @@
 LUA_API void (ldv_clear_heap)();
 
 /*
+		Performs local checks on ldv heap
+		Params: none
+		Return: none
+*/
+LUA_API void (ldv_check_heap)();
+
+/*
 		LDV frealloc function
 		Params: user data, ptr to data, original size, new size
 		Return: ptr to freallocated memory

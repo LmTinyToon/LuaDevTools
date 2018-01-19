@@ -318,6 +318,29 @@ void ldv_clear_heap()
 	set_head((BlockHead*)(mem_buf), NextHead, MEM_BUFF_SIZE);
 }
 
+void ldv_check_heap()
+{
+	/*	Performs local check on valid heads	*/
+	ldv_log("======	 Checking LDV HEADS  ============\n");
+	BlockHead* start_head = (BlockHead*)mem_buf;
+        for (unsigned int heads_count = 0; ; ++heads_count)
+        {
+                const ldv_block_type prev = get_head_offset(start_head, PrevHead);
+                const ldv_block_type next = get_head_offset(start_head, NextHead);
+		if (prev > MEM_BUFF_SIZE)
+			ldv_log("Corrupted prev index of block %p %i %i\n", start_head, heads_count, prev);
+		if (next > MEM_BUFF_SIZE)
+			ldv_log("Corrupted next index of block %p %i %i\n", start_head, heads_count, next);
+                if (status(start_head, NextHeadState) == MarginHead)
+                        break;
+                start_head = raw_move_head(start_head, NextHead, next);
+		const ldv_block_type next_prev = get_head_offset(start_head, PrevHead);
+		if (next != next_prev)
+			ldv_log("Inconsistent prev/next %i %i links (next head %p %i)", next, next_prev, start_head, heads_count);
+        }
+	ldv_log("=======================================\n");
+}
+
 void* ldv_frealloc(void* ud, void* ptr, size_t osize, size_t nsize)
 {
 	LDV_UNUSED(ud)
