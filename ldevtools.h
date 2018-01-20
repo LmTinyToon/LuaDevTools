@@ -12,9 +12,9 @@
 /*
 		Loads LDV library (to use functions from library)
 		Params: lua state
-		Return: err code
+		Return: none
 */
-LUA_API int (ldv_load_lib)(lua_State* L);
+LUA_API void (ldv_load_lib)(lua_State* L);
 
 /*
 		Clears custom ldv heap 

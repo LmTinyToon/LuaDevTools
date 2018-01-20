@@ -7,6 +7,7 @@
 #include "ldevtools.h"
 #include "lstate.h"
 #include "ltable.h"
+#include "lauxlib.h"
 
 #ifdef _WIN32
 	#include <windows.h>
@@ -321,14 +322,14 @@ static void* ldv_malloc(size_t nsize)
 */
 static int ldv_load_libf(lua_State* L)
 {
-	L_newlib(L, ldv_tab_funcs);
+	luaL_newlib(L, ldv_tab_funcs);
   	return 1;
 }
 
 //	Public API implementation
-int ldv_load_lib(lua_State* L)
+void ldv_load_lib(lua_State* L)
 {
-	return luaL_requiref (L, "ldv", ldv_load_libf, 1);
+	luaL_requiref (L, "ldv", ldv_load_libf, 1);
 }
 
 void ldv_clear_heap()
