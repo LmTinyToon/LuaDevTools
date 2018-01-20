@@ -71,11 +71,29 @@ typedef struct BlockHead
 
 //	PUBLIC LUA API FUNCTIONS
 /*===========PUBLIC LUA API BEGIN============*/
+/*
+		Prints dumpt of ldv memory heap
+		Params: none
+		Return: none
+*/
 static int dumpHeap(lua_State* L)
 {
 	LDV_UNUSED(L)
 	ldv_dump_heap();
 	return 0;
+}
+
+/*
+		Checks ldv heap on erros
+		Params: none
+		Return: error code
+*/
+static int checkHeap(lua_State* L)
+{
+	LDV_UNUSED(L)
+	const int err_code = ldv_check_heap(); 
+	lua_pushinteger(L, err_code);
+	return 1;
 }
 /*===========PUBLIC LUA API END==============*/
 
@@ -83,6 +101,7 @@ static int dumpHeap(lua_State* L)
 static const luaL_Reg ldv_tab_funcs[] =
 {
   {"dumpHeap", dumpHeap},
+  {"checkHeap", checkHeap},
   {NULL, NULL}
 };
 
