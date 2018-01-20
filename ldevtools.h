@@ -10,6 +10,13 @@
 
 //	Public API
 /*
+		Loads LDV library (to use functions from library)
+		Params: lua state
+		Return: err code
+*/
+LUA_API int (ldv_load_lib)(lua_State* L);
+
+/*
 		Clears custom ldv heap 
 		Params: none
 		Return: none

@@ -56,7 +56,12 @@ typedef enum StateStatus
 static char out_buff[1000];
 //		Memory buffer
 static ldv_block_type mem_buf[MEM_BUFF_SIZE] = { MEM_BUFF_SIZE };
-
+//		Public functions available from LUA script
+static const luaL_Reg ldv_tab_funcs[] = 
+{
+  {NULL, NULL} 
+};
+  
 /*
         Helper structure to mark blocks in memory buffer. It is used by memory manager
 */
@@ -309,7 +314,23 @@ static void* ldv_malloc(size_t nsize)
 	return RAW_MEMORY(fit_head) + 2;
 }
 
+/*
+	Loads ldv library
+	Params: lua state
+	Return: returns count
+*/
+static int ldv_load_libf(lua_State* L)
+{
+	L_newlib(L, ldv_tab_funcs);
+  	return 1;
+}
+
 //	Public API implementation
+int ldv_load_lib(lua_State* L)
+{
+	return luaL_requiref (L, "ldv", ldv_load_libf, 1);
+}
+
 void ldv_clear_heap()
 {
 	if (MEM_BUFF_SIZE > block_data_mask())
