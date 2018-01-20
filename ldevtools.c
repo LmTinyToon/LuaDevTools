@@ -57,11 +57,6 @@ typedef enum StateStatus
 static char out_buff[1000];
 //		Memory buffer
 static ldv_block_type mem_buf[MEM_BUFF_SIZE] = { MEM_BUFF_SIZE };
-//		Public functions available from LUA script
-static const luaL_Reg ldv_tab_funcs[] = 
-{
-  {NULL, NULL} 
-};
   
 /*
         Helper structure to mark blocks in memory buffer. It is used by memory manager
@@ -73,6 +68,24 @@ typedef struct BlockHead
     /*  Index (offset) to previous block    */
     ldv_block_type prev_index;
 } BlockHead;
+
+//	PUBLIC LUA API FUNCTIONS
+/*===========PUBLIC LUA API BEGIN============*/
+static int dumpHeap(lua_State* L)
+{
+	LDV_UNUSED(L)
+	ldv_dump_heap();
+	return 0;
+}
+/*===========PUBLIC LUA API END==============*/
+
+//              Public functions available from LUA script
+static const luaL_Reg ldv_tab_funcs[] =
+{
+  {"dumpHeap", dumpHeap},
+  {NULL, NULL}
+};
+
 
 //	Internal helpers
 /*
