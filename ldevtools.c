@@ -69,9 +69,6 @@ typedef struct BlockHead
     ldv_block_type prev_index;
 } BlockHead;
 
-//		Type of function which can be used as functor in traversion of ldv heap
-void (*heap_traverse_func)(BlockHead* head, const unsigned int index);
-
 //	PUBLIC LUA API FUNCTIONS
 /*===========PUBLIC LUA API BEGIN============*/
 /*
