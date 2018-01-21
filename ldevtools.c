@@ -69,6 +69,9 @@ typedef struct BlockHead
     ldv_block_type prev_index;
 } BlockHead;
 
+//		Type of function which can be used as functor in traversion of ldv heap
+void (*heap_traverse_func)(BlockHead* head, const unsigned int index);
+
 //	PUBLIC LUA API FUNCTIONS
 /*===========PUBLIC LUA API BEGIN============*/
 /*
@@ -95,6 +98,18 @@ static int checkHeap(lua_State* L)
 	lua_pushinteger(L, err_code);
 	return 1;
 }
+
+/*
+		Dumps object
+		Params: object to dump
+		Return: none
+		NOTE: (alex) in current implementation it is unsafe way to dump object
+*/
+static int dumpObject(lua_State* L)
+{
+	ldv_dump_value(L, L->top - 1);
+	return 0;
+}
 /*===========PUBLIC LUA API END==============*/
 
 //              Public functions available from LUA script
@@ -102,6 +117,7 @@ static const luaL_Reg ldv_tab_funcs[] =
 {
   {"dumpHeap", dumpHeap},
   {"checkHeap", checkHeap},
+  {"dumpObject", dumpObject},
   {NULL, NULL}
 };
 
@@ -548,11 +564,19 @@ void (ldv_dump_boolean)(lua_State* L, int bool_val)
 void (ldv_dump_table)(lua_State* L, Table* table)
 {
 	const int nsize = sizenode(table);
-	ldv_log("Type: TABLE size() \n", nsize);
+	ldv_log("Type: TABLE size(%i) \n", nsize + table->sizearray);
 	ldv_log("===========  TABLE CONTENTS ===========\n");
+	for (int i = 0; i < table->sizearray; ++i) 
+	{
+		ldv_log("Array key %i \n", i);
+		ldv_dump_value(L, &table->array[i]);
+    	}
 	for (int i = 0; i < nsize; ++i)
 	{
 		Node* node = &table->node[i];
+		ldv_log("Key of node: \n");
+		ldv_dump_value(L, gkey(node));
+		ldv_log("Value of node: \n");
 		ldv_dump_value(L, gval(node));
 	}
 	ldv_log("===========  TABLE CONTENTS ===========\n");
