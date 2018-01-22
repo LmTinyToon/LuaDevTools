@@ -23,6 +23,8 @@ typedef unsigned int ldv_block_type;
 #define MEM_BUFF_SIZE 1000000
 //		Gets raw memory
 #define RAW_MEMORY(x) ((ldv_block_type*)x)
+//		Size of indent in characters
+#define INDENT_SIZE 2
 
 /*	All states of head*/
 typedef enum StateType
@@ -104,7 +106,7 @@ static int checkHeap(lua_State* L)
 */
 static int dumpObject(lua_State* L)
 {
-	ldv_dump_value(L, L->top - 1);
+	ldv_dump_value(0, L, L->top - 1);
 	return 0;
 }
 /*===========PUBLIC LUA API END==============*/
@@ -122,10 +124,10 @@ static const luaL_Reg ldv_tab_funcs[] =
 //	Internal helpers
 /*
 		Logs message
-		Params: format message, variadic args
+		Params: indent value, format message, variadic args
 		Return: none
 */
-static void ldv_log(const char* format, ...)
+static void ldv_log(const int indent, const char* format, ...)
 {
 	va_list args;
 	va_start (args, format);
@@ -382,7 +384,7 @@ void ldv_clear_heap()
 {
 	if (MEM_BUFF_SIZE > block_data_mask())
 	{
-		ldv_log("Too big memory buffer size");
+		ldv_log(0, "Too big memory buffer size");
 		return;
 	}
 	for (int i = 0; i < MEM_BUFF_SIZE; ++i)
@@ -394,7 +396,7 @@ int ldv_check_heap()
 {
 	int code = 0;
 	/*	Performs local check on valid heads	*/
-	ldv_log("======	 Checking LDV HEADS  ============\n");
+	ldv_log(0, "======	 Checking LDV HEADS  ============\n");
 	BlockHead* start_head = (BlockHead*)mem_buf;
         for (unsigned int heads_count = 0; ; ++heads_count)
         {
@@ -402,12 +404,12 @@ int ldv_check_heap()
                 const ldv_block_type next = get_head_offset(start_head, NextHead);
 		if (prev > MEM_BUFF_SIZE)
 		{
-			ldv_log("Corrupted prev index of block %p %i %i\n", start_head, heads_count, prev);
+			ldv_log(0, "Corrupted prev index of block %p %i %i\n", start_head, heads_count, prev);
 			code = 1;
 		}
 		if (next > MEM_BUFF_SIZE)
 		{
-			ldv_log("Corrupted next index of block %p %i %i\n", start_head, heads_count, next);
+			ldv_log(0, "Corrupted next index of block %p %i %i\n", start_head, heads_count, next);
 			code = 1;
 		}
                 if (status(start_head, NextHeadState) == MarginHead)
@@ -416,11 +418,11 @@ int ldv_check_heap()
 		const ldv_block_type next_prev = get_head_offset(start_head, PrevHead);
 		if (next != next_prev)
 		{
-			ldv_log("Inconsistent prev/next %i %i links (next head %p %i)", next, next_prev, start_head, heads_count);
+			ldv_log(0, "Inconsistent prev/next %i %i links (next head %p %i)", next, next_prev, start_head, heads_count);
 			code = 1;
 		}
         }
-	ldv_log("=======================================\n");
+	ldv_log(0, "=======================================\n");
 	return code;
 }
 
@@ -449,7 +451,7 @@ void ldv_dump_heap()
 void ldv_portion_dump(const unsigned int fst_head, const unsigned int count)
 {
 	BlockHead* start_head = (BlockHead*)mem_buf;
-	ldv_log("======  LDV memory layout [%p, %p)         ===============\n", mem_buf, mem_buf + MEM_BUFF_SIZE);
+	ldv_log(0, "======  LDV memory layout [%p, %p)         ===============\n", mem_buf, mem_buf + MEM_BUFF_SIZE);
 	for (unsigned int heads_count = 0; ; ++heads_count)
 	{
 		if (heads_count < fst_head)
@@ -459,12 +461,12 @@ void ldv_portion_dump(const unsigned int fst_head, const unsigned int count)
 		ldv_block_type prev = get_head_offset(start_head, PrevHead);
 		ldv_block_type next = get_head_offset(start_head, NextHead);
 		const char* data_status = status(start_head, DataState) == Gem ? "GEM" : "GARBAGE";
-		ldv_log("HEAD %i, address %p, prev %i, next %i, data type %s \n", heads_count, start_head, prev, next, data_status);
+		ldv_log(0, "HEAD %i, address %p, prev %i, next %i, data type %s \n", heads_count, start_head, prev, next, data_status);
 		if (status(start_head, NextHeadState) == MarginHead)
 			break;
 		start_head = raw_move_head(start_head, NextHead, next);
 	}
-	ldv_log("==========================================================\n");
+	ldv_log(0, "==========================================================\n");
 
 }
 
@@ -477,181 +479,183 @@ void (ldv_dump_ldv_heap_at_mem)(const void* ptr)
 void (ldv_dump_hash_strtable)(lua_State* L)
 {
 	stringtable* hash_string_table = &G(L)->strt;
-	ldv_log("======= HASH STRING TABLE DUMP (nuse: %i) (size: %i) ==============\n", hash_string_table->nuse, hash_string_table->size);
+	ldv_log(0, "======= HASH STRING TABLE DUMP (nuse: %i) (size: %i) ==============\n", hash_string_table->nuse, hash_string_table->size);
 	for (int i = 0; i < hash_string_table->size; ++i)
 	{
 		TString **p = &hash_string_table->hash[i];
 		if (*p == NULL)
 			continue;
-		ldv_log("=========	List %i of elements	========\n", i);
+		ldv_log(INDENT_SIZE, "=========	List %i of elements	========\n", i);
 		while (*p != NULL) 
 		{
-			ldv_dump_short_string(L, *p);
+			ldv_dump_short_string(INDENT_SIZE, L, *p);
 			p = &(*p)->u.hnext;
 		}
-		ldv_log("=======================================\n");
+		ldv_log(INDENT_SIZE, "=======================================\n");
 	}
-	ldv_log("==========================================================\n");
+	ldv_log(0, "==========================================================\n");
 }
 
 void ldv_dump_call_infos(lua_State* L)
 {
-	ldv_log("=======           LUA CALL INFO DUMP       ==============\n");
+	ldv_log(0, "=======           LUA CALL INFO DUMP       ==============\n");
 	CallInfo* ci = &(L->base_ci);
 	int index = 0;
 	while (ci != 0)
 	{
-		ldv_log("Call info: %p, level: %i, results: %i \n", ci, index, ci->nresults);
-		ldv_log("Func: %p, Top stack elem: %p \n", ci->func, ci->top);
+		ldv_log(0, "Call info: %p, level: %i, results: %i \n", ci, index, ci->nresults);
+		ldv_log(0, "Func: %p, Top stack elem: %p \n", ci->func, ci->top);
 		ci = ci->next;
 		++index;
 	}
-	ldv_log("=========================================================\n");
+	ldv_log(0, "=========================================================\n");
 }
 
 void (ldv_dump_stack)(lua_State* L)
 {
-	ldv_log("=======           LUA STACK DUMP           ==============\n");
-	ldv_log("LUA STACK DUMP. address:%p size: %i objects. \n", L->stack, L->stacksize);
+	ldv_log(0, "=======           LUA STACK DUMP           ==============\n");
+	ldv_log(0, "LUA STACK DUMP. address:%p size: %i objects. \n", L->stack, L->stacksize);
 	for (int i = 0; i < L->stacksize; ++i)
 	{
 		StkId stack_elem = L->stack + i;
-		ldv_log("STACK ELEMENT:   Address: %p Index: %i \n", stack_elem, i);
-		ldv_dump_value(L, stack_elem);
+		ldv_log(0, "STACK ELEMENT:   Address: %p Index: %i \n", stack_elem, i);
+		ldv_dump_value(0, L, stack_elem);
 	}
-	ldv_log("=========================================================\n");
+	ldv_log(0, "=========================================================\n");
 }
 
-void (ldv_dump_value)(lua_State* L, const TValue* value)
+void (ldv_dump_value)(const int indent, lua_State* L, const TValue* value)
 {
+	const int next_indent = indent + INDENT_SIZE;
 	switch (ttype(value))
 	{
 
-		case LUA_TNIL:			 ldv_dump_nil(L, value);							return;
-		case LUA_TBOOLEAN:		 ldv_dump_boolean(L, bvalue(value));				return;
-		case LUA_TTABLE:		 ldv_dump_table(L, hvalue(value));					return;
-		case LUA_TLCL:			 ldv_dump_lua_closure(L, clLvalue(value));			return;
-		case LUA_TCCL:			 ldv_dump_c_closure(L, clCvalue(value));			return;
-		case LUA_TLCF:			 ldv_dump_c_light_func(L, fvalue(value));			return;
-		case LUA_TNUMFLT:		 ldv_dump_float_number(L, fltvalue(value));			return;
-		case LUA_TNUMINT:		 ldv_dump_int_number(L, ivalue(value));				return;
-		case LUA_TTHREAD:		 ldv_dump_thread(L, thvalue(value));				return;
-		case LUA_TUSERDATA:		 ldv_dump_user_data(L, getudatamem(uvalue(value))); return;
-		case LUA_TLIGHTUSERDATA: ldv_dump_light_user_data(L, pvalue(value));		return;
-		case LUA_TSHRSTR:		 ldv_dump_short_string(L, tsvalue(value));			return;
-		case LUA_TLNGSTR:		 ldv_dump_long_string(L, tsvalue(value));			return;
+		case LUA_TNIL:			 ldv_dump_nil(next_indent, L, value);							return;
+		case LUA_TBOOLEAN:		 ldv_dump_boolean(next_indent, L, bvalue(value));				return;
+		case LUA_TTABLE:		 ldv_dump_table(next_indent, L, hvalue(value));					return;
+		case LUA_TLCL:			 ldv_dump_lua_closure(next_indent, L, clLvalue(value));			return;
+		case LUA_TCCL:			 ldv_dump_c_closure(next_indent, L, clCvalue(value));			return;
+		case LUA_TLCF:			 ldv_dump_c_light_func(next_indent, L, fvalue(value));			return;
+		case LUA_TNUMFLT:		 ldv_dump_float_number(next_indent, L, fltvalue(value));			return;
+		case LUA_TNUMINT:		 ldv_dump_int_number(next_indent, L, ivalue(value));				return;
+		case LUA_TTHREAD:		 ldv_dump_thread(next_indent, L, thvalue(value));				return;
+		case LUA_TUSERDATA:		 ldv_dump_user_data(next_indent, L, getudatamem(uvalue(value))); return;
+		case LUA_TLIGHTUSERDATA: ldv_dump_light_user_data(next_indent, L, pvalue(value));		return;
+		case LUA_TSHRSTR:		 ldv_dump_short_string(next_indent, L, tsvalue(value));			return;
+		case LUA_TLNGSTR:		 ldv_dump_long_string(next_indent, L, tsvalue(value));			return;
 		default:
-			ldv_log("(ldv_dump_value func). Not recognized type: %s \n", ttypename(ttnov(value)));
+			ldv_log(next_indent, "(ldv_dump_value func). Not recognized type: %s \n", ttypename(ttnov(value)));
 			return;
 	}
 }
 
-void (ldv_dump_nil)(lua_State* L, const TValue* nil_object)
+void (ldv_dump_nil)(const int indent, lua_State* L, const TValue* nil_object)
 {
 	LDV_UNUSED(L) LDV_UNUSED(nil_object)
-	ldv_log("Type: NIL OBJECT \n");
+	ldv_log(indent, "Type: NIL OBJECT \n");
 }
 
-void (ldv_dump_boolean)(lua_State* L, const int bool_val)
+void (ldv_dump_boolean)(const int indent, lua_State* L, const int bool_val)
 {
 	LDV_UNUSED(L)
-	ldv_log("Type: BOOLEAN \n");
-	ldv_log("Value: %i \n", bool_val);
+	ldv_log(indent, "Type: BOOLEAN \n");
+	ldv_log(indent, "Value: %i \n", bool_val);
 }
 
-void (ldv_dump_table)(lua_State* L, const Table* table)
+void (ldv_dump_table)(const int indent, lua_State* L, const Table* table)
 {
 	const int nsize = sizenode(table);
-	ldv_log("Type: TABLE size(%i) \n", nsize + table->sizearray);
-	ldv_log("===========  TABLE CONTENTS ===========\n");
+	const int next_indent = indent + INDENT_SIZE;
+	ldv_log(indent, "Type: TABLE size(%i) \n", nsize + table->sizearray);
+	ldv_log(indent, "===========  TABLE CONTENTS ===========\n");
 	for (unsigned int i = 0; i < table->sizearray; ++i) 
 	{
-		ldv_log("Array key %i \n", i);
-		ldv_dump_value(L, &table->array[i]);
-    	}
+		ldv_log(next_indent, "Array key %i \n", i);
+		ldv_dump_value(next_indent, L, &table->array[i]);
+    }
 	for (int i = 0; i < nsize; ++i)
 	{
 		Node* node = &table->node[i];
-		ldv_log("Key of node: \n");
-		ldv_dump_value(L, gkey(node));
-		ldv_log("Value of node: \n");
-		ldv_dump_value(L, gval(node));
+		ldv_log(next_indent, "Key of node: \n");
+		ldv_dump_value(next_indent, L, gkey(node));
+		ldv_log(next_indent, "Value of node: \n");
+		ldv_dump_value(next_indent, L, gval(node));
 	}
-	ldv_log("===========  TABLE CONTENTS ===========\n");
+	ldv_log(indent, "=======================================\n");
 }
 
 
-void (ldv_dump_lua_closure)(lua_State* L, const LClosure* lclosure)
+void (ldv_dump_lua_closure)(const int indent, lua_State* L, const LClosure* lclosure)
 {
 	LDV_UNUSED(L) LDV_UNUSED(lclosure)
-	ldv_log("Type: LUA CLOSURE \n");
+	ldv_log(indent, "Type: LUA CLOSURE \n");
 }
 
-void (ldv_dump_c_closure)(lua_State* L, const CClosure* cclosure)
+void (ldv_dump_c_closure)(const int indent, lua_State* L, const CClosure* cclosure)
 {
 	LDV_UNUSED(L) LDV_UNUSED(cclosure)
-	ldv_log("Type: C CLOSURE \n");
+	ldv_log(indent, "Type: C CLOSURE \n");
 }
 
-void (ldv_dump_c_light_func)(lua_State* L, const lua_CFunction light_func)
+void (ldv_dump_c_light_func)(const int indent, lua_State* L, const lua_CFunction light_func)
 {
 	LDV_UNUSED(L)
-	ldv_log("Type: LIGHT C FUNCTION \n");
-	ldv_log("Value: %p \n", light_func);
+	ldv_log(indent, "Type: LIGHT C FUNCTION \n");
+	ldv_log(indent, "Value: %p \n", light_func);
 }
 
-void (ldv_dump_thread)(lua_State* L, lua_State* lua_thread)
+void (ldv_dump_thread)(const int indent, lua_State* L, lua_State* lua_thread)
 {
 	LDV_UNUSED(L)
-	ldv_log("Type: LUA THREAD \n");
-	ldv_log("Stack address %p, Top element %p Call Infos num %i", lua_thread->stack, lua_thread->top, lua_thread->nci);
+	ldv_log(indent, "Type: LUA THREAD \n");
+	ldv_log(indent, "Stack address %p, Top element %p Call Infos num %i", lua_thread->stack, lua_thread->top, lua_thread->nci);
 
 }
 
-void (ldv_dump_user_data)(lua_State* L, const char* user_data)
+void (ldv_dump_user_data)(const int indent, lua_State* L, const char* user_data)
 {
 	LDV_UNUSED(L)
-	ldv_log("Type: USER DATA \n");
-	ldv_log("Value: %p \n", user_data);
+	ldv_log(indent, "Type: USER DATA \n");
+	ldv_log(indent, "Value: %p \n", user_data);
 }
 
-void (ldv_dump_light_user_data)(lua_State* L, const void* light_user_data)
+void (ldv_dump_light_user_data)(const int indent, lua_State* L, const void* light_user_data)
 {
 	LDV_UNUSED(L)
-	ldv_log("Type: LIGHT USER DATA \n");
-	ldv_log("Value: %p \n", light_user_data);
+	ldv_log(indent, "Type: LIGHT USER DATA \n");
+	ldv_log(indent, "Value: %p \n", light_user_data);
 }
 
-void (ldv_dump_int_number)(lua_State* L, const lua_Integer int_num)
+void (ldv_dump_int_number)(const int indent, lua_State* L, const lua_Integer int_num)
 {
 	LDV_UNUSED(L)
-	ldv_log("Type: INTEGER NUMBER \n");
-	ldv_log("Value: %i \n", int_num);
+	ldv_log(indent, "Type: INTEGER NUMBER \n");
+	ldv_log(indent, "Value: %i \n", int_num);
 }
 
-void (ldv_dump_float_number)(lua_State* L, const lua_Number float_num)
+void (ldv_dump_float_number)(const int indent, lua_State* L, const lua_Number float_num)
 {
 	LDV_UNUSED(L)
-	ldv_log("Type: FLOAT NUMBER \n");
-	ldv_log("Value: %f \n", float_num);
+	ldv_log(indent, "Type: FLOAT NUMBER \n");
+	ldv_log(indent, "Value: %f \n", float_num);
 }
 
-void (ldv_dump_str)(lua_State* L, const TString* str)
+void (ldv_dump_str)(const int indent, lua_State* L, const TString* str)
 {
 	/*	What should be located here???*/
-	ldv_dump_short_string(L, str);
+	ldv_dump_short_string(indent, L, str);
 }
 
-void (ldv_dump_short_string)(lua_State* L, const TString* string)
+void (ldv_dump_short_string)(const int indent, lua_State* L, const TString* string)
 {
 	LDV_UNUSED(L)
-	ldv_log("Type: SHORT STRING (%i) \n", tsslen(string));
-	ldv_log("Value: %s \n", getstr(string));
+	ldv_log(indent, "Type: SHORT STRING (%i) \n", tsslen(string));
+	ldv_log(indent, "Value: %s \n", getstr(string));
 }
 
-void (ldv_dump_long_string)(lua_State* L, const TString* string)
+void (ldv_dump_long_string)(const int indent, lua_State* L, const TString* string)
 {
 	LDV_UNUSED(L)
-	ldv_log("Type: LONG STRING (%i) \n", tsslen(string));
-	ldv_log("Value: %s \n", getstr(string));
+	ldv_log(indent, "Type: LONG STRING (%i) \n", tsslen(string));
+	ldv_log(indent, "Value: %s \n", getstr(string));
 }
