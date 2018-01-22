@@ -375,6 +375,7 @@ static int ldv_load_libf(lua_State* L)
 void ldv_load_lib(lua_State* L)
 {
 	luaL_requiref (L, "ldv", ldv_load_libf, 1);
+	lua_pop(L, 1);  /* remove lib */
 }
 
 void ldv_clear_heap()
