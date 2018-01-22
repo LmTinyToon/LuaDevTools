@@ -129,9 +129,11 @@ static const luaL_Reg ldv_tab_funcs[] =
 */
 static void ldv_log(const int indent, const char* format, ...)
 {
+	for (int i = 0; i < indent; ++i)
+		out_buff[i] = ' ';
 	va_list args;
 	va_start (args, format);
-	vsprintf(out_buff, format, args);
+	vsprintf(out_buff + indent, format, args);
 	va_end (args);
 
 #ifdef _WIN32
