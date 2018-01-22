@@ -450,12 +450,18 @@ int ldv_check_ptrs(lua_State* L)
 	global_State* g = G(L);
 	if (!check_ptr(g))
 		return 0;
-	GCObject* gcobj = g->allgc;
-	while (gcobj != NULL)
+	GCObject* gobjects[10] = { g->allgc, g->sweepgc == NULL ? NULL : *(g->sweepgc), g->finobj, 
+							   g->gray, g->grayagain, g->weak, g->ephemeron, 
+							   g->allweak, g->tobefnz, g->fixedgc};
+	for (int i = 0; i < 10; ++i)
 	{
-		if (!check_ptr(gcobj))
-			return 0;
-		gcobj = gcobj->next;
+		GCObject* gcobj = gobjects[i];
+		while (gcobj != NULL)
+		{
+			if (!check_ptr(gcobj))
+				return 0;
+			gcobj = gcobj->next;
+		}
 	}
 	return 1;
 }
