@@ -526,6 +526,14 @@ void (ldv_dump_stack)(lua_State* L)
 	ldv_log(0, "=========================================================\n");
 }
 
+void ldv_dump_tops(lua_State* L, const int tops)
+{
+	ldv_log(0, "=========TOPS: %i===========\n", tops);
+	for (int i = 1; i < tops; ++i)
+		ldv_dump_value(0, L, L->top - i);
+	ldv_log(0, "===============================\n");
+}
+
 void (ldv_dump_value)(const int indent, lua_State* L, const TValue* value)
 {
 	const int next_indent = indent + INDENT_SIZE;

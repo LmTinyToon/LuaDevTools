@@ -83,6 +83,13 @@ LUA_API void (ldv_dump_call_infos)(lua_State* L);
 LUA_API void (ldv_dump_stack)(lua_State* L);
 
 /*
+		Dumpts tops values from lua stack
+		Params: lua state, count of top values
+		Return: none
+*/
+LUA_API void (ldv_dump_tops)(lua_State* L, const int tops);
+
+/*
 		Dumps object
 		Params: space indent, lua state, value
 		Return: none
