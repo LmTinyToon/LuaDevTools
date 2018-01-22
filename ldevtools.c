@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <stdarg.h>
 #include <string.h>
+#include <assert.h>
 
 //	Includes
 #include "ldevtools.h"
@@ -25,6 +26,8 @@ typedef unsigned int ldv_block_type;
 #define RAW_MEMORY(x) ((ldv_block_type*)x)
 //		Size of indent in characters
 #define INDENT_SIZE 2
+//		LDV assertions
+#define LDV_ASSERT(x) assert(x);
 
 /*	All states of head*/
 typedef enum StateType
@@ -141,6 +144,18 @@ static void ldv_log(const int indent, const char* format, ...)
 #endif
 
 	printf(out_buff);
+}
+
+/*
+		Checks, whether ptr is valid
+		Params: none
+		Return: valid flag (zero means not valid ptr)
+*/
+static int check_ptr(void* ptr)
+{
+	const int check_res = mem_buf <= ptr && ptr < mem_buf + MEM_BUFF_SIZE;
+	LDV_ASSERT(check_res)
+	return check_res;
 }
 
 /*
@@ -426,6 +441,23 @@ int ldv_check_heap()
         }
 	ldv_log(0, "=======================================\n");
 	return code;
+}
+
+int ldv_check_ptrs(lua_State* L)
+{
+	if (!check_ptr(L))
+		return 0;
+	global_State* g = G(L);
+	if (!check_ptr(g))
+		return 0;
+	GCObject* gcobj = g->allgc;
+	while (gcobj != NULL)
+	{
+		if (!check_ptr(gcobj))
+			return 0;
+		gcobj = gcobj->next;
+	}
+	return 1;
 }
 
 void* ldv_frealloc(void* ud, void* ptr, size_t osize, size_t nsize)

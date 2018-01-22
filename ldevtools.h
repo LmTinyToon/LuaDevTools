@@ -31,6 +31,13 @@ LUA_API void (ldv_clear_heap)();
 LUA_API int (ldv_check_heap)();
 
 /*
+		Checks pointers in lua objects
+		Params: lua state
+		Return: error code
+*/
+LUA_API int (ldv_check_ptrs)(lua_State* L);
+
+/*
 		LDV frealloc function
 		Params: user data, ptr to data, original size, new size
 		Return: ptr to freallocated memory
