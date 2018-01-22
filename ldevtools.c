@@ -521,7 +521,7 @@ void (ldv_dump_stack)(lua_State* L)
 	ldv_log("=========================================================\n");
 }
 
-void (ldv_dump_value)(lua_State* L, TValue* value)
+void (ldv_dump_value)(lua_State* L, const TValue* value)
 {
 	switch (ttype(value))
 	{
@@ -545,25 +545,25 @@ void (ldv_dump_value)(lua_State* L, TValue* value)
 	}
 }
 
-void (ldv_dump_nil)(lua_State* L, TValue* nil_object)
+void (ldv_dump_nil)(lua_State* L, const TValue* nil_object)
 {
 	LDV_UNUSED(L) LDV_UNUSED(nil_object)
 	ldv_log("Type: NIL OBJECT \n");
 }
 
-void (ldv_dump_boolean)(lua_State* L, int bool_val)
+void (ldv_dump_boolean)(lua_State* L, const int bool_val)
 {
 	LDV_UNUSED(L)
 	ldv_log("Type: BOOLEAN \n");
 	ldv_log("Value: %i \n", bool_val);
 }
 
-void (ldv_dump_table)(lua_State* L, Table* table)
+void (ldv_dump_table)(lua_State* L, const Table* table)
 {
 	const int nsize = sizenode(table);
 	ldv_log("Type: TABLE size(%i) \n", nsize + table->sizearray);
 	ldv_log("===========  TABLE CONTENTS ===========\n");
-	for (int i = 0; i < table->sizearray; ++i) 
+	for (unsigned int i = 0; i < table->sizearray; ++i) 
 	{
 		ldv_log("Array key %i \n", i);
 		ldv_dump_value(L, &table->array[i]);
@@ -580,19 +580,19 @@ void (ldv_dump_table)(lua_State* L, Table* table)
 }
 
 
-void (ldv_dump_lua_closure)(lua_State* L, LClosure* lclosure)
+void (ldv_dump_lua_closure)(lua_State* L, const LClosure* lclosure)
 {
 	LDV_UNUSED(L) LDV_UNUSED(lclosure)
 	ldv_log("Type: LUA CLOSURE \n");
 }
 
-void (ldv_dump_c_closure)(lua_State* L, CClosure* cclosure)
+void (ldv_dump_c_closure)(lua_State* L, const CClosure* cclosure)
 {
 	LDV_UNUSED(L) LDV_UNUSED(cclosure)
 	ldv_log("Type: C CLOSURE \n");
 }
 
-void (ldv_dump_c_light_func)(lua_State* L, lua_CFunction light_func)
+void (ldv_dump_c_light_func)(lua_State* L, const lua_CFunction light_func)
 {
 	LDV_UNUSED(L)
 	ldv_log("Type: LIGHT C FUNCTION \n");
@@ -607,48 +607,48 @@ void (ldv_dump_thread)(lua_State* L, lua_State* lua_thread)
 
 }
 
-void (ldv_dump_user_data)(lua_State* L, char* user_data)
+void (ldv_dump_user_data)(lua_State* L, const char* user_data)
 {
 	LDV_UNUSED(L)
 	ldv_log("Type: USER DATA \n");
 	ldv_log("Value: %p \n", user_data);
 }
 
-void (ldv_dump_light_user_data)(lua_State* L, void* light_user_data)
+void (ldv_dump_light_user_data)(lua_State* L, const void* light_user_data)
 {
 	LDV_UNUSED(L)
 	ldv_log("Type: LIGHT USER DATA \n");
 	ldv_log("Value: %p \n", light_user_data);
 }
 
-void (ldv_dump_int_number)(lua_State* L, lua_Integer int_num)
+void (ldv_dump_int_number)(lua_State* L, const lua_Integer int_num)
 {
 	LDV_UNUSED(L)
 	ldv_log("Type: INTEGER NUMBER \n");
 	ldv_log("Value: %i \n", int_num);
 }
 
-void (ldv_dump_float_number)(lua_State* L, lua_Number float_num)
+void (ldv_dump_float_number)(lua_State* L, const lua_Number float_num)
 {
 	LDV_UNUSED(L)
 	ldv_log("Type: FLOAT NUMBER \n");
 	ldv_log("Value: %f \n", float_num);
 }
 
-void (ldv_dump_str)(lua_State* L, TString* str)
+void (ldv_dump_str)(lua_State* L, const TString* str)
 {
 	/*	What should be located here???*/
 	ldv_dump_short_string(L, str);
 }
 
-void (ldv_dump_short_string)(lua_State* L, TString* string)
+void (ldv_dump_short_string)(lua_State* L, const TString* string)
 {
 	LDV_UNUSED(L)
 	ldv_log("Type: SHORT STRING (%i) \n", tsslen(string));
 	ldv_log("Value: %s \n", getstr(string));
 }
 
-void (ldv_dump_long_string)(lua_State* L, TString* string)
+void (ldv_dump_long_string)(lua_State* L, const TString* string)
 {
 	LDV_UNUSED(L)
 	ldv_log("Type: LONG STRING (%i) \n", tsslen(string));
