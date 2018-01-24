@@ -112,6 +112,17 @@ static int dumpObject(lua_State* L)
 	ldv_dump_value(0, L, L->top - 1);
 	return 0;
 }
+
+/*
+		Check objects 
+		Params: none
+		Return: none
+*/
+static int checkObjects(lua_State* L)
+{
+	ldv_check_ptrs(L);
+	return 0;
+}
 /*===========PUBLIC LUA API END==============*/
 
 //              Public functions available from LUA script
@@ -120,6 +131,7 @@ static const luaL_Reg ldv_tab_funcs[] =
   {"dumpHeap", dumpHeap},
   {"checkHeap", checkHeap},
   {"dumpObject", dumpObject},
+  {"checkObjects", checkObjects},
   {NULL, NULL}
 };
 
