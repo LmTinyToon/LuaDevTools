@@ -422,9 +422,9 @@ int check_table(lua_State* L, const Table* table)
 		if (!luaH_isdummy(table->node + i) && !check_ptr(table->node + i))
 			return 0;	
 	}
-	if (!check_ptr(table->metatable))
+	if (table->metatable && !check_ptr(table->metatable))
 		return 0;
-	return check_table(L, table->metatable);
+	return table->metatable && check_table(L, table->metatable);
 }
 
 /*
@@ -531,6 +531,11 @@ int check_gcobject(lua_State* L, const GCObject* gcobj)
 			return 1;
 		}
 		case LUA_TSTRING:
+		{
+			const TString* str = gco2ts(gcobj);
+			return check_ptr(str) ? check_string(L, str) : 0;
+		}
+		case LUA_TLNGSTR:
 		{
 			const TString* str = gco2ts(gcobj);
 			return check_ptr(str) ? check_string(L, str) : 0;
