@@ -428,16 +428,6 @@ int check_table(lua_State* L, const Table* table)
 }
 
 /*
-		Checks validity of lua closure
-		Params: lua state, lua closure
-		Return: valid state
-*/
-int check_lclosure(lua_State* L, const LClosure* lclosure)
-{
-	return 1;
-}
-
-/*
 		Checks validity of cclosure 
 		Params: lua state, cclosure
 		Return: valid state
@@ -464,7 +454,44 @@ int check_string(lua_State* L, const TString* str)
 */
 int check_proto(lua_State* L, const Proto* proto)
 {
+	if (!check_ptr(proto->source))
+		return 0;
+	for (int i = 0; i < proto->sizep; ++i)
+	{
+		if (!check_ptr(proto->p + i) || !check_ptr(proto->p[i]))
+			return 0;
+	}
+	for (int i = 0; i < proto->sizecode; ++i)
+	{
+		if (!check_ptr(proto->code + i))
+			return 0;
+	}
+	for (int i = 0; i < proto->sizelocvars; ++i)
+	{
+		if (!check_ptr(proto->locvars + i))
+			return 0;
+	}
+	for (int i = 0; i < proto->sizeupvalues; ++i)
+	{
+		if (!check_ptr(proto->upvalues + i))
+			return 0;
+	}
 	return 1;
+}
+
+/*
+		Checks validity of lua closure
+		Params: lua state, lua closure
+		Return: valid state
+*/
+int check_lclosure(lua_State* L, const LClosure* lclosure)
+{
+	for (unsigned int i = 0; i < lclosure->nupvalues; ++i)
+	{
+		if (!check_ptr(lclosure->upvals + i))
+			return 0;
+	}
+	return check_proto(L, lclosure->p);
 }
 
 /*
