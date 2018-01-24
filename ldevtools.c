@@ -454,7 +454,7 @@ int check_string(lua_State* L, const TString* str)
 */
 int check_proto(lua_State* L, const Proto* proto)
 {
-	if (!check_ptr(proto->source))
+	if (proto->source && !check_ptr(proto->source))
 		return 0;
 	for (int i = 0; i < proto->sizep; ++i)
 	{
