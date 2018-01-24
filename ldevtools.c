@@ -410,7 +410,21 @@ static int ldv_load_libf(lua_State* L)
 */
 int check_table(lua_State* L, const Table* table)
 {
-	return 1;
+	if (!check_ptr(table->array) || !check_ptr(table->node))
+		return 0;
+	for (unsigned int i = 0; i < table->sizearray; ++i)
+	{
+		if (!check_ptr(table->array + i))
+			return 0;
+	}
+	for (unsigned int i = 0; i < table->lsizenode; ++i)
+	{
+		if (!check_ptr(table->node + i))
+			return 0;	
+	}
+	if (!check_ptr(table->metatable))
+		return 0;
+	return check_table(L, table->metatable);
 }
 
 /*
