@@ -410,7 +410,7 @@ static int ldv_load_libf(lua_State* L)
 */
 int check_table(lua_State* L, const Table* table)
 {
-	if (!check_ptr(table->array) || !check_ptr(table->node))
+	if (table->array && !check_ptr(table->array) || table->node && !luaH_isdummy(table->node) && !check_ptr(table->node))
 		return 0;
 	for (unsigned int i = 0; i < table->sizearray; ++i)
 	{
@@ -419,7 +419,7 @@ int check_table(lua_State* L, const Table* table)
 	}
 	for (unsigned int i = 0; i < table->lsizenode; ++i)
 	{
-		if (!check_ptr(table->node + i))
+		if (!luaH_isdummy(table->node + i) && !check_ptr(table->node + i))
 			return 0;	
 	}
 	if (!check_ptr(table->metatable))
