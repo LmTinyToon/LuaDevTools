@@ -458,7 +458,7 @@ int check_proto(lua_State* L, const Proto* proto)
 		return 0;
 	for (int i = 0; i < proto->sizep; ++i)
 	{
-		if (!check_ptr(proto->p + i) || !check_ptr(proto->p[i]))
+		if (!check_ptr(proto->p + i) || proto->p[i] && !check_ptr(proto->p[i]))
 			return 0;
 	}
 	for (int i = 0; i < proto->sizecode; ++i)
