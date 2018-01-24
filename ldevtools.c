@@ -151,7 +151,7 @@ static void ldv_log(const int indent, const char* format, ...)
 		Params: none
 		Return: valid flag (zero means not valid ptr)
 */
-static int check_ptr(void* ptr)
+static int check_ptr(const void* ptr)
 {
 	const int check_res = mem_buf <= ptr && ptr < mem_buf + MEM_BUFF_SIZE;
 	LDV_ASSERT(check_res)
@@ -390,6 +390,110 @@ static int ldv_load_libf(lua_State* L)
   	return 1;
 }
 
+/*			PRIVATE FUNCS				*/
+/*
+		Checks validity of table 
+		Params: lua state, table
+		Return: valid state
+*/
+int check_table(lua_State* L, const Table* table)
+{
+	return 1;
+}
+
+/*
+		Checks validity of lua closure
+		Params: lua state, lua closure
+		Return: valid state
+*/
+int check_lclosure(lua_State* L, const LClosure* lclosure)
+{
+	return 1;
+}
+
+/*
+		Checks validity of cclosure 
+		Params: lua state, cclosure
+		Return: valid state
+*/
+int check_cclosure(lua_State* L, const CClosure* cclosure)
+{
+	return 1;
+}
+
+/*
+		Checks validity of string 
+		Params: lua state, string
+		Return: valid state
+*/
+int check_string(lua_State* L, const TString* str)
+{
+	return 1;
+}
+
+/*
+		Checks validity of proto 
+		Params: lua state, proto
+		Return: valid state
+*/
+int check_proto(lua_State* L, const Proto* proto)
+{
+	return 1;
+}
+
+/*
+		Check gc object on validness
+		Params: lua state, gc object
+		Return: valid state
+*/
+int check_gcobject(lua_State* L, const GCObject* gcobj)
+{
+	if (!check_ptr(gcobj))
+		return 0;
+	switch (gcobj->tt)
+	{
+		case LUA_TTABLE:
+		{
+			const Table* table = gco2t(gcobj);
+			return check_ptr(table) ? check_table(L, table) : 0;
+		}
+		case LUA_TLCL:
+		{
+			const LClosure* lclosure = gco2lcl(gcobj);
+			return check_ptr(lclosure) ? check_lclosure(L, lclosure) : 0;
+		}
+		case LUA_TCCL:
+		{	
+			const CClosure* cclosure = gco2ccl(gcobj);
+			return check_ptr(cclosure) ? check_cclosure(L, cclosure) : 0;
+		}
+		case LUA_TUSERDATA:
+		{
+			/*	TODO: (alex) how to check?	*/
+			return 1;
+		}
+		case LUA_TLCF:
+		{
+			/*	TODO: (alex) how to check?	*/
+			return 1;
+		}
+		case LUA_TSTRING:
+		{
+			const TString* str = gco2ts(gcobj);
+			return check_ptr(str) ? check_string(L, str) : 0;
+		}
+		case LUA_TPROTO:
+		{
+			const Proto* proto = gco2p(gcobj);
+			return check_ptr(proto) ? check_proto(L, proto) : 0;
+		}
+		default:
+			ldv_log(0, "(check_gcobject func). Not recognized type: %i \n", gcobj->tt);
+			return 0;
+	}
+}
+/*			PRIVATE FUNCS END			*/	
+
 //	Public API implementation
 void ldv_load_lib(lua_State* L)
 {
@@ -458,7 +562,7 @@ int ldv_check_ptrs(lua_State* L)
 		GCObject* gcobj = gobjects[i];
 		while (gcobj != NULL)
 		{
-			if (!check_ptr(gcobj))
+			if (!check_gcobject(L, gcobj))
 				return 0;
 			gcobj = gcobj->next;
 		}
