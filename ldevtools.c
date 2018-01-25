@@ -207,6 +207,7 @@ static ldv_block_type block_flag_mask(void)
 */
 static void set_head(BlockHead* binfo, HeadType head_type, ldv_block_type head)
 {
+	LDV_ASSERT(check_ptr(binfo))
 	const int data_mask = block_data_mask();
 	const int flag_mask = block_flag_mask();
 	const ldv_block_type cl_head = head & data_mask;
@@ -227,6 +228,7 @@ static void set_head(BlockHead* binfo, HeadType head_type, ldv_block_type head)
 */
 static ldv_block_type get_head_offset(BlockHead* bhead, HeadType head_type)
 {
+	LDV_ASSERT(check_ptr(bhead))
 	int data_mask = block_data_mask();
 	return head_type == NextHead ? bhead->next_index & data_mask : bhead->prev_index & data_mask;
 }
@@ -238,6 +240,7 @@ static ldv_block_type get_head_offset(BlockHead* bhead, HeadType head_type)
 */
 static ldv_block_type data_size(BlockHead* bhead)
 {
+	LDV_ASSERT(check_ptr(bhead))
 	return ((bhead->next_index & block_data_mask()) - 2) * sizeof(ldv_block_type);
 }
 
@@ -248,6 +251,7 @@ static ldv_block_type data_size(BlockHead* bhead)
 */
 StateStatus status(BlockHead* binfo, StateType flag)
 {
+	LDV_ASSERT(check_ptr(binfo))
 	int mask = block_flag_mask();
 	switch (flag)
 	{
@@ -268,6 +272,7 @@ StateStatus status(BlockHead* binfo, StateType flag)
 */
 void set_status(BlockHead* binfo, StateStatus status)
 {
+	LDV_ASSERT(check_ptr(binfo))
 	int mask = block_flag_mask();
 	switch (status)
 	{
@@ -290,6 +295,7 @@ void set_status(BlockHead* binfo, StateStatus status)
 */
 static BlockHead* raw_move_head(BlockHead* head, HeadType head_type, ldv_block_type offset)
 {
+	LDV_ASSERT(check_ptr(head))
 	if (head_type == NextHead)
 		return (BlockHead*)(RAW_MEMORY(head) + offset);
 	return (BlockHead*)(RAW_MEMORY(head) - offset);
@@ -304,6 +310,7 @@ static void ldv_free(void* ptr)
 {
 	if (ptr == NULL)
 		return;
+	LDV_ASSERT(check_ptr(ptr))
 	BlockHead* b_info = (BlockHead*)(RAW_MEMORY(ptr) - 2);
 	set_status(b_info, Garbage);
 	ldv_block_type bheads_offsets[2] = {0, get_head_offset(b_info, PrevHead)};
@@ -639,8 +646,10 @@ void* ldv_frealloc(void* ud, void* ptr, size_t osize, size_t nsize)
 		return 0;
 	}
 	void* all_mem = ldv_malloc(nsize);
+	LDV_ASSERT(check_ptr(all_mem))
 	if (ptr != 0 && osize != 0)
 	{
+		LDV_ASSERT(check_ptr(ptr))
 		memcpy(all_mem, ptr, osize < nsize ? osize : nsize);
 		ldv_free(ptr);
 	}
