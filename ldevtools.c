@@ -246,6 +246,20 @@ static ldv_block_type data_size(BlockHead* bhead)
 }
 
 /*
+		Checks data, pointed with "sized" ptr
+		Params: pointer to raw data, min size of data
+		Return: check result
+*/
+static int check_sized_ptr(const void* ptr, const unsigned int min_size)
+{
+	ldv_block_type* raw_data = RAW_MEMORY(ptr) - 2;
+	LDV_ASSERT(mem_buf <= raw_data && raw_data < mem_buf + MEM_BUFF_SIZE)
+	const ldv_block_type next = get_head_offset((BlockHead*)raw_data, NextHead);
+	LDV_ASSERT(next * sizeof(ldv_block_type) >= min_size + sizeof(ldv_block_type) * 2)
+	return 0;
+}
+
+/*
         Gets status of current state type
         Params: block info, state type
         Return: state status
@@ -529,24 +543,25 @@ int check_lclosure(lua_State* L, const LClosure* lclosure)
 */
 int check_gcobject(lua_State* L, const GCObject* gcobj)
 {
-	if (!check_ptr(gcobj))
+	
+	if (!check_sized_ptr(gcobj, sizeof(GCObject)))
 		return 0;
 	switch (gcobj->tt)
 	{
 		case LUA_TTABLE:
 		{
 			const Table* table = gco2t(gcobj);
-			return check_ptr(table) ? check_table(L, table) : 0;
+			return check_sized_ptr(table, sizeof(Table)) ? check_table(L, table) : 0;
 		}
 		case LUA_TLCL:
 		{
 			const LClosure* lclosure = gco2lcl(gcobj);
-			return check_ptr(lclosure) ? check_lclosure(L, lclosure) : 0;
+			return check_sized_ptr(lclosure, sizeof(LClosure)) ? check_lclosure(L, lclosure) : 0;
 		}
 		case LUA_TCCL:
 		{	
 			const CClosure* cclosure = gco2ccl(gcobj);
-			return check_ptr(cclosure) ? check_cclosure(L, cclosure) : 0;
+			return check_sized_ptr(cclosure, sizeof(CClosure)) ? check_cclosure(L, cclosure) : 0;
 		}
 		case LUA_TUSERDATA:
 		{
@@ -561,17 +576,17 @@ int check_gcobject(lua_State* L, const GCObject* gcobj)
 		case LUA_TSTRING:
 		{
 			const TString* str = gco2ts(gcobj);
-			return check_ptr(str) ? check_string(L, str) : 0;
+			return check_sized_ptr(str, sizeof(TString)) ? check_string(L, str) : 0;
 		}
 		case LUA_TLNGSTR:
 		{
 			const TString* str = gco2ts(gcobj);
-			return check_ptr(str) ? check_string(L, str) : 0;
+			return check_sized_ptr(str, sizeof(TString)) ? check_string(L, str) : 0;
 		}
 		case LUA_TPROTO:
 		{
 			const Proto* proto = gco2p(gcobj);
-			return check_ptr(proto) ? check_proto(L, proto) : 0;
+			return check_sized_ptr(proto, sizeof(Proto)) ? check_proto(L, proto) : 0;
 		}
 		default:
 			ldv_log(0, "(check_gcobject func). Not recognized type: %i \n", gcobj->tt);
@@ -851,7 +866,7 @@ void ldv_dump_proto(const int indent, lua_State* L, const Proto* proto)
 {
 	ldv_log(indent, "Type: PROTO, UPSIZE %i, CDSIZE %i, CONSTSIZE %i", proto->sizeupvalues, proto->sizecode, proto->sizek);
 	ldv_log(0, "Upvalues description: \n");
-	for (unsigned int i = 0; i < proto->sizeupvalues; ++i)
+	for (int i = 0; i < proto->sizeupvalues; ++i)
 	{
 		ldv_log(0, "STACK INDEX %i, INSTACK %i\n NAME (DEBUG PURPOSES)\n", proto->upvalues[i].idx, proto->upvalues[i].instack);
 		ldv_dump_str(indent, L, proto->upvalues[i].name);
