@@ -253,10 +253,14 @@ static ldv_block_type data_size(BlockHead* bhead)
 static int check_sized_ptr(const void* ptr, const unsigned int min_size)
 {
 	ldv_block_type* raw_data = RAW_MEMORY(ptr) - 2;
-	LDV_ASSERT(mem_buf <= raw_data && raw_data < mem_buf + MEM_BUFF_SIZE)
+	const int check_location = mem_buf <= raw_data && raw_data < mem_buf + MEM_BUFF_SIZE;
+	LDV_ASSERT(check_location)
+	if (!check_location)
+		return 0;
 	const ldv_block_type next = get_head_offset((BlockHead*)raw_data, NextHead);
-	LDV_ASSERT(next * sizeof(ldv_block_type) >= min_size + sizeof(ldv_block_type) * 2)
-	return 0;
+	const int check_size = next * sizeof(ldv_block_type) >= min_size + sizeof(ldv_block_type) * 2;
+	LDV_ASSERT(check_size)
+	return check_size;
 }
 
 /*
