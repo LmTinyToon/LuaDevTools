@@ -97,6 +97,13 @@ LUA_API void (ldv_dump_stack)(lua_State* L);
 LUA_API void (ldv_dump_tops)(lua_State* L, const int tops);
 
 /*
+		Dumps upvalue 
+		Params: space indent, lua state, upvalue
+		Params: none
+*/
+LUA_API void (ldv_dump_upvalue)(const int indent, lua_State* L, const UpVal* upval);
+
+/*
 		Dumps object
 		Params: space indent, lua state, value
 		Return: none
@@ -130,6 +137,13 @@ LUA_API void (ldv_dump_table)(const int indent, lua_State* L, const Table* table
 		Return: none
 */
 LUA_API void (ldv_dump_lua_closure)(const int indent, lua_State* L, const LClosure* lclosure);
+
+/*
+		Dumps function prototype
+		Params: space indent, lua state, proto
+		Return: none
+*/
+LUA_API void (ldv_dump_proto)(const int indent, lua_State* L, const Proto* proto);
 
 /*
 		Dumps c closure (c function with upvalues)

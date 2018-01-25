@@ -9,6 +9,7 @@
 #include "lstate.h"
 #include "ltable.h"
 #include "lauxlib.h"
+#include "lfunc.h"
 
 #ifdef _WIN32
 	#include <windows.h>
@@ -435,6 +436,23 @@ int check_table(lua_State* L, const Table* table)
 }
 
 /*
+		Checks upvalue 
+		Params: lua state, upvalue
+		Return: valid state
+*/
+int check_upvalue(lua_State* L, const UpVal* upval)
+{
+	const UpVal* val = upval;
+	while (val != NULL)
+	{
+		if (!check_ptr(val) || !check_ptr(val->v))
+			return 0;
+		val = upisopen(val) ? val->u.open.next : NULL;
+	}
+	return 1;
+}
+
+/*
 		Checks validity of cclosure 
 		Params: lua state, cclosure
 		Return: valid state
@@ -499,6 +517,7 @@ int check_lclosure(lua_State* L, const LClosure* lclosure)
 	{
 		if (!check_ptr(lclosure->upvals + i))
 			return 0;
+		check_upvalue(L, lclosure->upvals[i]);
 	}
 	return check_proto(L, lclosure->p);
 }
@@ -745,7 +764,18 @@ void ldv_dump_tops(lua_State* L, const int tops)
 	ldv_log(0, "===============================\n");
 }
 
-void (ldv_dump_value)(const int indent, lua_State* L, const TValue* value)
+void ldv_dump_upvalue(const int indent, lua_State* L, const UpVal* upval)
+{
+	const UpVal* val = upval;
+	while (val != NULL)
+	{
+		ldv_log(indent, "Type: UPVALUE, REF COUNT: %i\n", val->refcount);
+		ldv_dump_value(indent, L, val->v);
+		val = upisopen(val) ? val->u.open.next : NULL;
+	}
+}
+
+void ldv_dump_value(const int indent, lua_State* L, const TValue* value)
 {
 	const int next_indent = indent + INDENT_SIZE;
 	switch (ttype(value))
@@ -809,20 +839,35 @@ void (ldv_dump_table)(const int indent, lua_State* L, const Table* table)
 void (ldv_dump_lua_closure)(const int indent, lua_State* L, const LClosure* lclosure)
 {
 	LDV_UNUSED(L) LDV_UNUSED(lclosure)
-	ldv_log(indent, "Type: LUA CLOSURE \n");
+	ldv_log(indent, "Type: LUA CLOSURE, MARKED: %i \n", lclosure->marked);
+	for (unsigned int i = 0; i < lclosure->nupvalues; ++i)
+	{
+		ldv_dump_upvalue(indent, L, lclosure->upvals[i]);
+	}
+	ldv_dump_proto(indent, L, lclosure->p);
 }
 
-void (ldv_dump_c_closure)(const int indent, lua_State* L, const CClosure* cclosure)
+void ldv_dump_proto(const int indent, lua_State* L, const Proto* proto)
+{
+	ldv_log(indent, "Type: PROTO, UPSIZE %i, CDSIZE %i, CONSTSIZE %i", proto->sizeupvalues, proto->sizecode, proto->sizek);
+	ldv_log(0, "Upvalues description: \n");
+	for (unsigned int i = 0; i < proto->sizeupvalues; ++i)
+	{
+		ldv_log(0, "STACK INDEX %i, INSTACK %i\n NAME (DEBUG PURPOSES)\n", proto->upvalues[i].idx, proto->upvalues[i].instack);
+		ldv_dump_str(indent, L, proto->upvalues[i].name);
+	}
+}
+
+void ldv_dump_c_closure(const int indent, lua_State* L, const CClosure* cclosure)
 {
 	LDV_UNUSED(L) LDV_UNUSED(cclosure)
-	ldv_log(indent, "Type: C CLOSURE \n");
+	ldv_log(indent, "Type: C CLOSURE with func: %p\n", cclosure->f);
 }
 
 void (ldv_dump_c_light_func)(const int indent, lua_State* L, const lua_CFunction light_func)
 {
 	LDV_UNUSED(L)
-	ldv_log(indent, "Type: LIGHT C FUNCTION \n");
-	ldv_log(indent, "Value: %p \n", light_func);
+	ldv_log(indent, "Type: LIGHT C FUNCTION (addr %p)\n", light_func);
 }
 
 void (ldv_dump_thread)(const int indent, lua_State* L, lua_State* lua_thread)
