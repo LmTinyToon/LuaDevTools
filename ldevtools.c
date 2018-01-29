@@ -785,13 +785,8 @@ void ldv_dump_tops(lua_State* L, const int tops)
 
 void ldv_dump_upvalue(const int indent, lua_State* L, const UpVal* upval)
 {
-	const UpVal* val = upval;
-	while (val != NULL)
-	{
-		ldv_log(indent, "Type: UPVALUE, REF COUNT: %i\n", val->refcount);
-		ldv_dump_value(indent, L, val->v);
-		val = upisopen(val) ? val->u.open.next : NULL;
-	}
+	ldv_log(indent, "Type: UPVALUE, REF COUNT: %i, OPEN: %i\n", upval->refcount, upisopen(upval));
+	ldv_dump_value(indent, L, upval->v);
 }
 
 void ldv_dump_value(const int indent, lua_State* L, const TValue* value)
