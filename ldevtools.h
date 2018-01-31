@@ -195,13 +195,6 @@ LUA_API void (ldv_dump_int_number)(const int indent, const int depth, lua_State*
 LUA_API void (ldv_dump_float_number)(const int indent, const int depth, lua_State* L, const lua_Number float_num);
 
 /*
-		Dumps general str
-		Params: space indent, lua state, general lua string
-		Return: none
-*/
-LUA_API void (ldv_dump_str)(const int indent, const int depth, lua_State* L, const TString* str);
-
-/*
 		Dumps short string object
 		Params: space indent, lua state, short lua string
 		Return: none
