@@ -777,7 +777,7 @@ void ldv_dump_stack(lua_State* L, const int depth)
 	for (StkId stk_el = L->ci->func; stk_el != L->ci->top; ++stk_el)
 	{
 		ldv_dump_value(0, depth, L, stk_el);
-		ldv_log(0, "\n");
+		ldv_log(0, "\n\n");
 	}
 	ldv_log(0, "=========================================================\n");
 }
@@ -786,7 +786,10 @@ void ldv_dump_tops(lua_State* L, const int tops, const int depth)
 {
 	ldv_log(0, "=========TOPS: %i===========\n", tops);
 	for (int i = 1; i <= tops; ++i)
+	{
 		ldv_dump_value(0, depth, L, L->top - i);
+		ldv_log(0, "\n\n");
+	}
 	ldv_log(0, "===============================\n");
 }
 
