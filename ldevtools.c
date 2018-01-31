@@ -31,6 +31,13 @@ typedef unsigned int ldv_block_type;
 #define INDENT_SIZE 2
 //		LDV assertions
 #define LDV_ASSERT(x) assert(x);
+//		Checking ldv depth
+#define LDV_DEPTH_CHECK(depth) \
+if (depth == 0)\
+{\
+	ldv_log(0, "....");\
+	return;\
+}
 
 /*	All states of head*/
 typedef enum StateType
@@ -787,14 +794,13 @@ void ldv_dump_upvalue(const int indent, const int depth, lua_State* L, const UpV
 {
 	if (depth == 0)
 		return;
-	ldv_log(indent, "Type: UPVALUE, REF COUNT: %i, OPEN: %i\n", upval->refcount, upisopen(upval));
+	ldv_log(indent, "Upval(%i, %i) ", upval->refcount, upisopen(upval));
 	ldv_dump_value(indent, depth - 1, L, upval->v);
 }
 
 void ldv_dump_value(const int indent, const int depth, lua_State* L, const TValue* value)
 {
-	if (depth == 0)
-		return;
+	LDV_DEPTH_CHECK(depth)
 	const int next_indent = indent + INDENT_SIZE;
 	switch (ttype(value))
 	{
@@ -821,23 +827,20 @@ void ldv_dump_value(const int indent, const int depth, lua_State* L, const TValu
 void (ldv_dump_nil)(const int indent, const int depth, lua_State* L, const TValue* nil_object)
 {
 	LDV_UNUSED(L) LDV_UNUSED(nil_object)
-	if (depth == 0)
-		return;
-	ldv_log(indent, "NIL");
+	LDV_DEPTH_CHECK(depth)
+	ldv_log(0, "NIL");
 }
 
 void ldv_dump_boolean(const int indent, const int depth, lua_State* L, const int bool_val)
 {
 	LDV_UNUSED(L)
-	if (depth == 0)
-		return;
-	ldv_log(indent, "Bool(%i)", bool_val);
+	LDV_DEPTH_CHECK(depth)
+	ldv_log(0, "%s", bool_val ? "True" : "False");
 }
 
 void ldv_dump_table(const int indent, const int depth, lua_State* L, const Table* table)
 {
-	if (depth == 0)
-		return;
+	LDV_DEPTH_CHECK(depth)
 	ldv_log(0, "{");
 	for (unsigned int i = 0; i < table->sizearray; ++i) 
 	{
@@ -869,50 +872,48 @@ void ldv_dump_table(const int indent, const int depth, lua_State* L, const Table
 void (ldv_dump_lua_closure)(const int indent, const int depth, lua_State* L, const LClosure* lclosure)
 {
 	LDV_UNUSED(L) LDV_UNUSED(lclosure)
-	if (depth == 0)
-		return;
-	ldv_log(indent, "Type: LUA CLOSURE, MARKED: %i \n", lclosure->marked);
+	LDV_DEPTH_CHECK(depth)
+	ldv_log(0, "LuaClosure (");
 	for (unsigned int i = 0; i < lclosure->nupvalues; ++i)
 	{
 		ldv_dump_upvalue(indent, depth - 1, L, lclosure->upvals[i]);
+		ldv_log(0, ",");
 	}
-	ldv_dump_proto(indent, depth - 1, L, lclosure->p);
+	ldv_log(0, ") ");
+	ldv_dump_proto(0, depth - 1, L, lclosure->p);
 }
 
 void ldv_dump_proto(const int indent, const int depth, lua_State* L, const Proto* proto)
 {
-	if (depth == 0)
-		return;
-	ldv_log(indent, "Type: PROTO, UPSIZE %i, CDSIZE %i, CONSTSIZE %i", proto->sizeupvalues, proto->sizecode, proto->sizek);
-	ldv_log(0, "Upvalues description: \n");
+	LDV_DEPTH_CHECK(depth)
+	ldv_log(0, "Proto(up %i, csize %i, ksize %i) (", proto->sizeupvalues, proto->sizecode, proto->sizek);
 	for (int i = 0; i < proto->sizeupvalues; ++i)
 	{
-		ldv_log(0, "STACK INDEX %i, INSTACK %i\n NAME (DEBUG PURPOSES)\n", proto->upvalues[i].idx, proto->upvalues[i].instack);
-		ldv_dump_short_string(indent, depth - 1, L, proto->upvalues[i].name);	//	I am not sure that it is right
+		//	TODO: (alex) think about long string, I am not sure that it is right
+		ldv_dump_short_string(indent, depth - 1, L, proto->upvalues[i].name);	
+		ldv_log(0, ",");
 	}
+	ldv_log(0, ")");
 }
 
 void ldv_dump_c_closure(const int indent, const int depth, lua_State* L, const CClosure* cclosure)
 {
 	LDV_UNUSED(L) LDV_UNUSED(cclosure)
-	if (depth == 0)
-		return;
-	ldv_log(indent, "C-cls %p", cclosure->f);
+	LDV_DEPTH_CHECK(depth)
+	ldv_log(0, "C-cls %p", cclosure->f);
 }
 
 void (ldv_dump_c_light_func)(const int indent, const int depth, lua_State* L, const lua_CFunction light_func)
 {
 	LDV_UNUSED(L)
-	if (depth == 0)
-		return;
+	LDV_DEPTH_CHECK(depth)
 	ldv_log(0, "cfunc %p", light_func);
 }
 
 void (ldv_dump_thread)(const int indent, const int depth, lua_State* L, lua_State* lua_thread)
 {
 	LDV_UNUSED(L)
-	if (depth == 0)
-		return;
+	LDV_DEPTH_CHECK(depth)
 	ldv_log(0, "Lua Thread. Stack address %p, Top element %p Call Infos num %i", lua_thread->stack, lua_thread->top, lua_thread->nci);
 
 }
@@ -926,39 +927,34 @@ void (ldv_dump_user_data)(const int indent, const int depth, lua_State* L, const
 void (ldv_dump_light_user_data)(const int indent, const int depth, lua_State* L, const void* light_user_data)
 {
 	LDV_UNUSED(L)
-	if (depth == 0)
-		return;
+	LDV_DEPTH_CHECK(depth)
 	ldv_log(0, "LghUData %p", light_user_data);
 }
 
 void (ldv_dump_int_number)(const int indent, const int depth, lua_State* L, const lua_Integer int_num)
 {
 	LDV_UNUSED(L)
-	if (depth == 0)
-		return;
+	LDV_DEPTH_CHECK(depth)
 	ldv_log(0, "%i", int_num);
 }
 
 void (ldv_dump_float_number)(const int indent, const int depth, lua_State* L, const lua_Number float_num)
 {
 	LDV_UNUSED(L)
-	if (depth == 0)
-		return;
+	LDV_DEPTH_CHECK(depth)
 	ldv_log(0, "%f", float_num);
 }
 
 void (ldv_dump_short_string)(const int indent, const int depth, lua_State* L, const TString* string)
 {
 	LDV_UNUSED(L)
-	if (depth == 0)
-		return;
+	LDV_DEPTH_CHECK(depth)
 	ldv_log(0, "\"%s\"", getstr(string));
 }
 
 void (ldv_dump_long_string)(const int indent, const int depth, lua_State* L, const TString* string)
 {
 	LDV_UNUSED(L)
-	if (depth == 0)
-		return;
+	LDV_DEPTH_CHECK(depth)
 	ldv_log(0, "LNGStr(%i)(%s)", tsslen(string), getstr(string));
 }
