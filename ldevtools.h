@@ -98,114 +98,114 @@ LUA_API void (ldv_dump_tops)(lua_State* L, const int tops);
 
 /*
 		Dumps upvalue 
-		Params: space indent, lua state, upvalue
+		Params: lua state, upvalue
 		Params: none
 */
-LUA_API void (ldv_dump_upvalue)(const int indent, lua_State* L, const UpVal* upval);
+LUA_API void (ldv_dump_upvalue)(lua_State* L, const UpVal* upval);
 
 /*
 		Dumps object
-		Params: space indent, dump depth, lua state, value
+		Params: dump depth, lua state, value
 		Return: none
 */
-LUA_API void (ldv_dump_value)(const int indent, const int depth, lua_State* L, const TValue* value);
+LUA_API void ldv_dump_value(const int depth, lua_State* L, const TValue* value);
 
 /*
 		Dumps nil objects
-		Params: space indent, lua state, nil object
+		Params: lua state, nil object
 		Return: none
 */
-LUA_API void (ldv_dump_nil)(const int indent, const int depth, lua_State* L, const TValue* nil_object);
+LUA_API void ldv_dump_nil(const int depth, lua_State* L, const TValue* nil_object);
 
 /*
 		Dumps boolean object
-		Params: space indent, lua state, boolean object
+		Params: lua state, boolean object
 		Return: none
 */
-LUA_API void (ldv_dump_boolean)(const int indent, const int depth, lua_State* L, const int bool_val);
+LUA_API void ldv_dump_boolean(const int depth, lua_State* L, const int bool_val);
 
 /*
 		Dumps table
-		Params: space indent, lua state, table
+		Params: lua state, table
 		Return: none
 */
-LUA_API void (ldv_dump_table)(const int indent, const int depth, lua_State* L, const Table* table);
+LUA_API void ldv_dump_table(const int depth, lua_State* L, const Table* table);
 
 /*
 		Dumps lua closure
-		Params: space indent, lua state, lua closure
+		Params: lua state, lua closure
 		Return: none
 */
-LUA_API void (ldv_dump_lua_closure)(const int indent, const int depth, lua_State* L, const LClosure* lclosure);
+LUA_API void ldv_dump_lua_closure(const int depth, lua_State* L, const LClosure* lclosure);
 
 /*
 		Dumps function prototype
-		Params: space indent, lua state, proto
+		Params: lua state, proto
 		Return: none
 */
-LUA_API void (ldv_dump_proto)(const int indent, const int depth, lua_State* L, const Proto* proto);
+LUA_API void ldv_dump_proto(const int depth, lua_State* L, const Proto* proto);
 
 /*
 		Dumps c closure (c function with upvalues)
-		Params: space indent, lua state, c closure
+		Params: lua state, c closure
 		Return: none
 */
-LUA_API void (ldv_dump_c_closure)(const int indent, const int depth, lua_State* L, const CClosure* cclosure);
+LUA_API void ldv_dump_c_closure(const int depth, lua_State* L, const CClosure* cclosure);
 
 /*
 		Dumps light c function (vanilla c function without any upvalues)
-		Params: space indent, lua state, light c function
+		Params: lua state, light c function
 		Return: none
 */
-LUA_API void (ldv_dump_c_light_func)(const int indent, const int depth, lua_State* L, const lua_CFunction light_func);
+LUA_API void ldv_dump_c_light_func(const int depth, lua_State* L, const lua_CFunction light_func);
 
 /*
 		Dumps lua thread
 		Params: space indent, lua state, lua thread
 		Return: none
 */
-LUA_API void (ldv_dump_thread)(const int indent, const int depth, lua_State* L, lua_State* lua_thread);
+LUA_API void ldv_dump_thread(const int depth, lua_State* L, lua_State* lua_thread);
 
 /*
 		Dumps user data
-		Params: space indent, lua state, user data
+		Params: lua state, user data
 		Return: none
 */
-LUA_API void (ldv_dump_user_data)(const int indent, const int depth, lua_State* L, const char* user_data);
+LUA_API void ldv_dump_user_data(const int depth, lua_State* L, const char* user_data);
 
 /*
 		Dumps light user data
-		Params: space indent, lua state, light user data
+		Params: lua state, light user data
 		Return: none
 */
-LUA_API void (ldv_dump_light_user_data)(const int indent, const int depth, lua_State* L, const void* light_user_data);
+LUA_API void ldv_dump_light_user_data(const int depth, lua_State* L, const void* light_user_data);
 
 /*
 		Dumps integer lua anumber
-		Params: space indent, lua state, lua integer number
+		Params: lua state, lua integer number
 		Return: none
 */
-LUA_API void (ldv_dump_int_number)(const int indent, const int depth, lua_State* L, const lua_Integer int_num);
+LUA_API void ldv_dump_int_number(const int depth, lua_State* L, const lua_Integer int_num);
 
 /*
 		Dumps float lua anumber
-		Params: space indent, lua state, lua float number
+		Params: lua state, lua float number
 		Return: none
 */
-LUA_API void (ldv_dump_float_number)(const int indent, const int depth, lua_State* L, const lua_Number float_num);
+LUA_API void ldv_dump_float_number(const int depth, lua_State* L, const lua_Number float_num);
 
 /*
 		Dumps short string object
-		Params: space indent, lua state, short lua string
+		Params: lua state, short lua string
 		Return: none
 */
-LUA_API void (ldv_dump_short_string)(const int indent, const int depth, lua_State* L, const TString* string);
+LUA_API void ldv_dump_short_string(const int depth, lua_State* L, const TString* string);
 
 /*
 		Dumps long string object
-		Params: space indent, lua state, long lua string
+		Params: lua state, long lua string
 		Return: none
 */
-LUA_API void (ldv_dump_long_string)(const int indent, const int depth, lua_State* L, const TString* string);
+LUA_API void ldv_dump_long_string(const int depth, lua_State* L, const TString* string);
 
 #endif
