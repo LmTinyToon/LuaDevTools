@@ -90,6 +90,13 @@ LUA_API void ldv_bt(lua_State* L);
 LUA_API void ldv_f(lua_State* L, const int frame_index, const int depth);
 
 /*
+		Dumps entire lua stack
+		Params: lua state, depth of dumping
+		Return: none
+*/
+LUA_API void ldv_stack(lua_State* L, const int depth);
+
+/*
 		Dumpts tops values from lua stack
 		Params: lua state, count of top values
 		Return: none

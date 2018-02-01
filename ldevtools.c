@@ -785,6 +785,18 @@ void ldv_f(lua_State* L, const int frame_index, const int depth)
 	ldv_log(0, "=========================================================\n");
 }
 
+void ldv_stack(lua_State* L, const int depth)
+{
+	ldv_log(0, "=================  Lua stack  =======================\n");
+	for (StkId it = L->stack; it != L->top; ++it)
+	{
+		ldv_log(0, "#%i: ", it - L->stack);
+		ldv_dump_value(depth, L, it);
+		ldv_log(0, "\n");
+	}
+	ldv_log(0, "=========================================================\n");
+}
+
 void ldv_dump_tops(lua_State* L, const int tops, const int depth)
 {
 	ldv_log(0, "=========TOPS: %i===========\n", tops);
