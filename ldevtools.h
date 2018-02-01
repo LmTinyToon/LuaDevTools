@@ -76,18 +76,18 @@ LUA_API void (ldv_dump_ldv_heap_at_mem)(const void* ptr);
 LUA_API void (ldv_dump_hash_strtable)(lua_State* L);
 
 /*
-		Dumps calling infos
+		Dumps information about backtrace
 		Params: lua state
 		Return: none
 */
-LUA_API void (ldv_dump_call_infos)(lua_State* L);
+LUA_API void ldv_bt(lua_State* L);
 
 /*
-		Dumps stack of lua state
-		Params: lua state, depth
+		Dumps info frame at specified index, depth
+		Params: lua state, frame index, depth
 		Return: none
 */
-LUA_API void (ldv_dump_stack)(lua_State* L, const int depth);
+LUA_API void ldv_f(lua_State* L, const int frame_index, const int depth);
 
 /*
 		Dumpts tops values from lua stack

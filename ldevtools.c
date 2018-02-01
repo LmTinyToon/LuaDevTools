@@ -756,28 +756,31 @@ void (ldv_dump_hash_strtable)(lua_State* L)
 	ldv_log(0, "==========================================================\n");
 }
 
-void ldv_dump_call_infos(lua_State* L)
+void ldv_bt(lua_State* L)
 {
-	ldv_log(0, "=======           LUA CALL INFO DUMP       ==============\n");
-	CallInfo* ci = &(L->base_ci);
+	ldv_log(0, "=======           LUA BACKTRACE       ==============\n");
 	int index = 0;
-	while (ci != 0)
+	for (CallInfo* ci = &(L->base_ci); ci != 0; ci = ci->next, ++index)
 	{
-		ldv_log(0, "Call info: %p, level: %i, results: %i \n", ci, index, ci->nresults);
-		ldv_log(0, "Func: %p, Top stack elem: %p \n", ci->func, ci->top);
-		ci = ci->next;
-		++index;
+		ldv_log(0, "Frame %i: results: %i, [%i, %i] \n", index, ci->nresults, ci->func - L->base_ci.func, ci->top - L->base_ci.func);
 	}
 	ldv_log(0, "=========================================================\n");
 }
 
-void ldv_dump_stack(lua_State* L, const int depth)
+void ldv_f(lua_State* L, const int frame_index, const int depth)
 {
-	ldv_log(0, "=================Lua Stack=======================\n");
-	for (StkId stk_el = L->ci->func + 1; stk_el != L->ci->top; ++stk_el)
+	int index = 0;
+	CallInfo* ci = &(L->base_ci);
+	for (; ci != 0 && index != frame_index; ci = ci->next)
+		++index;
+	ldv_log(0, "=================  Lua info frame  =======================\n");
+	if (ci != 0)
 	{
-		ldv_dump_value(depth, L, stk_el);
-		ldv_log(0, "\n\n");
+		for (StkId stk_el = ci->func + 1; stk_el != ci->top; ++stk_el)
+		{
+			ldv_dump_value(depth, L, stk_el);
+			ldv_log(0, "\n\n");
+		}
 	}
 	ldv_log(0, "=========================================================\n");
 }
