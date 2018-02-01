@@ -774,7 +774,7 @@ void ldv_dump_call_infos(lua_State* L)
 void ldv_dump_stack(lua_State* L, const int depth)
 {
 	ldv_log(0, "=================Lua Stack=======================\n");
-	for (StkId stk_el = L->ci->func; stk_el != L->ci->top; ++stk_el)
+	for (StkId stk_el = L->ci->func + 1; stk_el != L->ci->top; ++stk_el)
 	{
 		ldv_dump_value(depth, L, stk_el);
 		ldv_log(0, "\n\n");
@@ -843,29 +843,32 @@ void ldv_dump_boolean(const int depth, lua_State* L, const int bool_val)
 void ldv_dump_table(const int depth, lua_State* L, const Table* table)
 {
 	LDV_DEPTH_CHECK(depth)
+	int first = 1;
 	ldv_log(0, "{");
 	for (unsigned int i = 0; i < table->sizearray; ++i) 
 	{
-		ldv_log(0, "[%i] = ", i);
-		ldv_dump_value(depth - 1, L, &table->array[i]);
-		if (i + 1 < table->sizearray)
+		if (!first)
 		{
 			ldv_log(0, ",");
 		}
+		first = 0;
+		ldv_log(0, "[%i]=", i);
+		ldv_dump_value(depth - 1, L, &table->array[i]);
     }
 	for (int i = 0; i < sizenode(table); ++i)
 	{
 		Node* node = &table->node[i];
 		if (ttisnil(gkey(node)) || ttisnil(gval(node)))
 			continue;
-		ldv_log(0,"[");
-		ldv_dump_value(depth - 1, L, gkey(node));
-		ldv_log(0,"] = ");
-		ldv_dump_value(depth - 1, L, gval(node));
-		if (i + 1 < sizenode(table))
+		if (!first)
 		{
 			ldv_log(0, ",");
 		}
+		first = 0;
+		ldv_log(0,"[");
+		ldv_dump_value(depth - 1, L, gkey(node));
+		ldv_log(0,"]=");
+		ldv_dump_value(depth - 1, L, gval(node));
 	}
 	ldv_log(0, "}");
 }
