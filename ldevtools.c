@@ -267,7 +267,7 @@ static void mark_block(BlockHead* bhead, const UserDataLabel label)
 	for (ldv_block_type i = 2; i != next_end; ++i)
 	{
 		LDV_ASSERT(check_ptr(p + i))	
-		*p = label == Allocated ? ALLOC_MASK : FREE_MASK;
+		*(p + i) = label == Allocated ? ALLOC_MASK : FREE_MASK;
 	}
 }
 
