@@ -262,7 +262,7 @@ static ldv_block_type get_head_offset(BlockHead* bhead, HeadType head_type)
 static void mark_block(BlockHead* bhead, const UserDataLabel label)
 {
 	LDV_ASSERT(check_ptr(bhead))	
-	ldv_block_type* p = RAW_MEMORY(bhead) + 2;
+	ldv_block_type* p = RAW_MEMORY(bhead);
 	const ldv_block_type next_end = get_head_offset(bhead, NextHead);
 	for (ldv_block_type i = 2; i != next_end; ++i)
 	{
