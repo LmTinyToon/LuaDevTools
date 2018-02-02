@@ -68,10 +68,21 @@ typedef enum StateStatus
 	MiddleHead	/*	Head is located within memory pool. You can change head/data.	*/
 } StateStatus;
 
+/*	Available label for user data*/
+typedef enum UserDataLabel
+{
+	Allocated,
+	Free
+};
+
 //		Output char buffer
 static char out_buff[1000];
 //		Memory buffer
 static ldv_block_type mem_buf[MEM_BUFF_SIZE] = { MEM_BUFF_SIZE };
+//		ALLOC MASK 
+static const ldv_block_type ALLOC_MASK = 0xA1A1A1A1;
+//		FREE MASK 
+static const ldv_block_type FREE_MASK = 0xFEFEFEFE;
   
 /*
         Helper structure to mark blocks in memory buffer. It is used by memory manager
@@ -244,6 +255,23 @@ static ldv_block_type get_head_offset(BlockHead* bhead, HeadType head_type)
 }
 
 /*
+		Marks block with specific label
+		Params: block info, label type
+		Return: none
+*/
+static void mark_block(BlockHead* bhead, const UserDataLabel label)
+{
+	LDV_ASSERT(check_ptr(bhead))	
+	ldv_block_type* p = RAW_MEMORY(bhead) + 2;
+	const ldv_block_type next_end = get_head_offset(bhead, NextHead);
+	for (ldv_block_type i = 2; i != next_end; ++i)
+	{
+		LDV_ASSERT(check_ptr(p + i))	
+		*p = label == Allocated ? ALLOC_MASK : FREE_MASK;
+	}
+}
+
+/*
 		Computes hold data size in bytes
 		Params: block head
 		Return: size of block head data
@@ -341,6 +369,7 @@ static void ldv_free(void* ptr)
 	LDV_ASSERT(check_ptr(ptr))
 	BlockHead* b_info = (BlockHead*)(RAW_MEMORY(ptr) - 2);
 	set_status(b_info, Garbage);
+	mark_block(b_info, Free);
 	ldv_block_type bheads_offsets[2] = {0, get_head_offset(b_info, PrevHead)};
 	for (int i = 0; i < 2; ++i)
 	{
@@ -358,6 +387,7 @@ static void ldv_free(void* ptr)
 					set_head(raw_move_head(bhead, NextHead, next_offset + next_next_offset), PrevHead, next_offset + next_next_offset);
 				}
 			}
+			mark_block(bhead, Free);
 		}
 	}
 }
@@ -423,6 +453,7 @@ static void* ldv_malloc(size_t nsize)
 	{
 		set_head(next_block, PrevHead, next_block_off);
 	}
+	mark_block(fit_head, Allocated);
 	return RAW_MEMORY(fit_head) + 2;
 }
 
